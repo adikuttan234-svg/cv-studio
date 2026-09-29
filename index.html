@@ -1444,29 +1444,38 @@ function linksMarkup(cv) {
 }
 
 function designMarkup(cv) {
-  const templateCards = TEMPLATE_OPTIONS.map(t => `<button type="button" class="template-card ${cv.settings.template === t.id ? "active" : ""}" data-template="${t.id}">
-    <div class="template-thumb ${t.id === "developer" ? "dev-thumb" : ""}"><div class="thumb-head"></div><div class="thumb-line"></div><div class="thumb-line short"></div>${t.id === "two-column" ? '<div class="thumb-columns"><div class="thumb-col"></div><div class="thumb-col"></div></div>' : '<div class="thumb-line"></div><div class="thumb-line short"></div><div class="thumb-line"></div>'}</div>
-    <div class="template-name">${escapeHtml(t.name)}</div><div class="template-desc">${escapeHtml(t.desc)}</div>
-  </button>`).join("");
-  const order = cv.settings.sectionOrder.filter(id => ALL_SECTION_IDS.includes(id));
-  const orderItems = order.map((id, i) => `<div class="order-item" draggable="true" data-section-id="${id}"><span class="order-grip">☷</span><span>${escapeHtml(SECTION_LABELS[id])}</span><small>${hasSectionData(id, cv) ? "Used" : "Empty"}</small><label class="checkbox-row"><input type="checkbox" data-section-toggle="${id}" ${isSectionEnabled(id, cv) ? "checked" : ""} aria-label="Show ${escapeAttr(SECTION_LABELS[id])} section" /></label><button type="button" data-action="moveSection" data-index="${i}" data-direction="up" aria-label="Move section up">↑</button><button type="button" data-action="moveSection" data-index="${i}" data-direction="down" aria-label="Move section down">↓</button></div>`).join("");
-  return `<div class="form-section">
-    <div><h3>Template</h3><div class="design-grid">${templateCards}</div></div>
-    <div class="form-divider"></div>
-    <div class="field-grid">
-      <div class="field"><label for="fontSelect">Font</label><select id="fontSelect" data-path="settings.font">${FONT_OPTIONS.map(font => `<option value="${escapeAttr(font)}" ${cv.settings.font === font ? "selected" : ""}>${escapeHtml(font)}</option>`).join("")}</select></div>
-      <div class="field"><label>Accent Color</label><div class="color-field"><input type="color" id="accentColor" data-path="settings.accentColor" value="${escapeAttr(cv.settings.accentColor)}" /><input data-path="settings.accentColor" value="${escapeAttr(cv.settings.accentColor)}" aria-label="Accent color hex value" /></div></div>
-      <div class="field"><label for="textSizeRange">Text Size <span class="counter" id="textSizeCounter">${Number(cv.settings.textSize).toFixed(1)} px</span></label><div class="range-row"><input id="textSizeRange" data-path="settings.textSize" type="range" min="9" max="12" step="0.1" value="${escapeAttr(cv.settings.textSize)}" /><input data-path="settings.textSize" type="number" min="9" max="12" step="0.1" value="${escapeAttr(cv.settings.textSize)}" aria-label="Text size" /></div></div>
-      <div class="field"><label for="spacingRange">Spacing <span class="counter" id="spacingCounter">${Number(cv.settings.spacing).toFixed(1)}×</span></label><div class="range-row"><input id="spacingRange" data-path="settings.spacing" type="range" min="0.75" max="1.4" step="0.05" value="${escapeAttr(cv.settings.spacing)}" /><input data-path="settings.spacing" type="number" min="0.75" max="1.4" step="0.05" value="${escapeAttr(cv.settings.spacing)}" aria-label="Spacing" /></div></div>
-      <div class="field full"><label for="sectionStyleSelect">Section Style</label><select id="sectionStyleSelect" data-path="settings.sectionStyle"><option value="bar" ${cv.settings.sectionStyle === "bar" ? "selected" : ""}>Rule and label</option><option value="line" ${cv.settings.sectionStyle === "line" ? "selected" : ""}>Underline</option><option value="accent" ${cv.settings.sectionStyle === "accent" ? "selected" : ""}>Accent label</option><option value="box" ${cv.settings.sectionStyle === "box" ? "selected" : ""}>Subtle box</option></select></div>
-    </div>
-    <div class="form-divider"></div>
-    <div><h3>Optional Sections</h3><div class="hint" style="margin-bottom:10px">Use these sections only when they add useful information. Empty sections never appear in the CV.</div>${optionalSectionEditors(cv)}</div>
-    <div class="form-divider"></div>
-    <div><h3>Section Order</h3><div class="hint" style="margin-bottom:10px">Drag sections to reorder them. The CV preview follows this order.</div><div class="order-list" id="sectionOrderList">${orderItems}</div></div>
-  </div>`;
-}
+  const templateCards = TEMPLATE_OPTIONS.map((t, index) =>
+    '<button type="button" class="template-card ' + (cv.settings.template === t.id ? 'active' : '') + '" data-template="' + escapeAttr(t.id) + '" data-template-name="' + escapeAttr(t.name) + '">' +
+      '<div class="template-thumb preset-' + String(index + 1).padStart(2, "0") + ' ' + (t.layout === "dark" ? 'dev-thumb' : '') + '">' +
+        '<div class="thumb-head"></div><div class="thumb-line"></div><div class="thumb-line short"></div><div class="thumb-columns"><div class="thumb-col"></div><div class="thumb-col"></div></div><div class="thumb-line"></div>' +
+      '</div>' +
+      '<div class="template-name">' + escapeHtml(t.name) + (t.id.startsWith('gallery-') ? '<span class="template-badge">NEW</span>' : '') + '</div>' +
+      '<div class="template-desc">' + escapeHtml(t.desc) + '</div>' +
+    '</button>'
+  ).join('');
 
+  const order = cv.settings.sectionOrder.filter(id => ALL_SECTION_IDS.includes(id));
+  const orderItems = order.map((id, i) => '<div class="order-item" draggable="true" data-section-id="' + id + '"><span class="order-grip">☷</span><span>' + escapeHtml(SECTION_LABELS[id]) + '</span><small>' + (hasSectionData(id, cv) ? 'Used' : 'Empty') + '</small><label class="checkbox-row"><input type="checkbox" data-section-toggle="' + id + '" ' + (isSectionEnabled(id, cv) ? 'checked' : '') + ' aria-label="Show ' + escapeAttr(SECTION_LABELS[id]) + ' section" /></label><button type="button" data-action="moveSection" data-index="' + i + '" data-direction="up" aria-label="Move section up">↑</button><button type="button" data-action="moveSection" data-index="' + i + '" data-direction="down" aria-label="Move section down">↓</button></div>').join('');
+  const textOptions = TEXT_STYLE_OPTIONS.map(t => '<option value="' + t.id + '" ' + (cv.settings.textStyle === t.id ? 'selected' : '') + '>' + escapeHtml(t.name) + '</option>').join('');
+  const fontOptions = FONT_OPTIONS.map(font => '<option value="' + escapeAttr(font) + '" ' + (cv.settings.font === font ? 'selected' : '') + '>' + escapeHtml(font) + '</option>').join('');
+
+  return '<div class="form-section design-studio">' +
+    '<div class="design-toolbar"><div><h3>Template Library <span class="library-count">50 styles</span></h3><div class="hint">Choose a layout, then refine the typography and spacing.</div></div><div class="template-search-wrap"><input id="templateSearch" type="search" placeholder="Search templates..." aria-label="Search templates" /></div></div>' +
+    '<div class="design-grid" id="templateGrid">' + templateCards + '</div>' +
+    '<div class="form-divider"></div>' +
+    '<div><h3>Text Style Library <span class="library-count">50 styles</span></h3>' +
+      '<div class="field-grid"><div class="field"><label for="textStyleSelect">Text Style</label><select id="textStyleSelect" data-path="settings.textStyle">' + textOptions + '</select></div><div class="field"><label for="fontSelect">Base Font</label><select id="fontSelect" data-path="settings.font">' + fontOptions + '</select></div></div>' +
+      '<div class="text-style-preview"><strong>Type preview</strong><span>The quick brown fox jumps over the lazy dog.</span></div>' +
+    '</div>' +
+    '<div class="form-divider"></div>' +
+    '<div class="field-grid"><div class="field"><label>Accent Color</label><div class="color-field"><input type="color" id="accentColor" data-path="settings.accentColor" value="' + escapeAttr(cv.settings.accentColor) + '" /><input data-path="settings.accentColor" value="' + escapeAttr(cv.settings.accentColor) + '" aria-label="Accent color hex value" /></div></div>' +
+      '<div class="field"><label for="textSizeRange">Text Size <span class="counter" id="textSizeCounter">' + Number(cv.settings.textSize).toFixed(1) + ' px</span></label><div class="range-row"><input id="textSizeRange" data-path="settings.textSize" type="range" min="9" max="12" step="0.1" value="' + escapeAttr(cv.settings.textSize) + '" /><input data-path="settings.textSize" type="number" min="9" max="12" step="0.1" value="' + escapeAttr(cv.settings.textSize) + '" aria-label="Text size" /></div></div>' +
+      '<div class="field"><label for="spacingRange">Spacing <span class="counter" id="spacingCounter">' + Number(cv.settings.spacing).toFixed(1) + '×</span></label><div class="range-row"><input id="spacingRange" data-path="settings.spacing" type="range" min="0.75" max="1.4" step="0.05" value="' + escapeAttr(cv.settings.spacing) + '" /><input data-path="settings.spacing" type="number" min="0.75" max="1.4" step="0.05" value="' + escapeAttr(cv.settings.spacing) + '" aria-label="Spacing" /></div></div>' +
+      '<div class="field"><label for="sectionStyleSelect">Section Style</label><select id="sectionStyleSelect" data-path="settings.sectionStyle"><option value="bar" ' + (cv.settings.sectionStyle === 'bar' ? 'selected' : '') + '>Rule and label</option><option value="line" ' + (cv.settings.sectionStyle === 'line' ? 'selected' : '') + '>Underline</option><option value="accent" ' + (cv.settings.sectionStyle === 'accent' ? 'selected' : '') + '>Accent label</option><option value="box" ' + (cv.settings.sectionStyle === 'box' ? 'selected' : '') + '>Subtle box</option></select></div></div>' +
+    '<div class="form-divider"></div><div><h3>Optional Sections</h3><div class="hint" style="margin-bottom:10px">Use these sections only when they add useful information. Empty sections never appear in the CV.</div>' + optionalSectionEditors(cv) + '</div>' +
+    '<div class="form-divider"></div><div><h3>Section Order</h3><div class="hint" style="margin-bottom:10px">Drag sections to reorder them. The CV preview follows this order.</div><div class="order-list" id="sectionOrderList">' + orderItems + '</div></div>' +
+  '</div>';
+}
 function optionalSectionEditors(cv) {
   return `<div class="form-section">
     ${arrayEditor("Achievements", "achievements", cv.achievements, "achievement", "Add achievement")}
