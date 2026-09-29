@@ -2783,8 +2783,6 @@ function init() {
   els.mobilePreviewBtn.addEventListener("click", openMobilePreview);
   els.downloadTopBtn.addEventListener("click", printCv);
   if (els.themeToggleBtn) els.themeToggleBtn.addEventListener("click", toggleTheme);
-  const themeButton = els.themeToggleBtn;
-  if (themeButton) themeButton.addEventListener("click", toggleTheme);
   applyTheme();
   document.addEventListener("keydown", event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
