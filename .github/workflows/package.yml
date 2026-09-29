@@ -14,13 +14,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Create project ZIP
+      - name: Create project ZIP from Git tree
         shell: bash
         run: |
-          zip -qr cv-studio-current.zip . -x ".git/*" ".github/workflows/package.yml" "cv-studio-current.zip"
+          git archive --format=zip --output=cv-studio-current.zip HEAD
+          zip -dq cv-studio-current.zip .github/workflows/package.yml || true
       - name: Upload project ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: cv-studio-current
+          name: cv-studio-current-${{ github.run_number }}
           path: cv-studio-current.zip
           retention-days: 7
