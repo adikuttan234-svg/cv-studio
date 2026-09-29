@@ -1195,10 +1195,112 @@ body.dark-ui .checkbox-row{color:#cbd5e1}
   .template-preview-wrap{min-height:252px}
   .template-svg-preview{width:188px;height:240px}
 }
+
+/* Final interaction fixes */
+.template-card{
+  display:block !important;
+  width:100%;
+  min-height:325px !important;
+  height:auto !important;
+  align-self:start !important;
+  overflow:hidden !important;
+}
+.template-preview-wrap{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  height:240px !important;
+  min-height:240px !important;
+  max-height:240px !important;
+  padding:5px !important;
+  overflow:hidden !important;
+}
+.template-svg-preview{
+  display:block !important;
+  width:180px !important;
+  height:230px !important;
+  min-width:180px !important;
+  min-height:230px !important;
+  max-width:180px !important;
+  max-height:230px !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+.template-card .template-name,
+.template-card .template-desc{
+  display:block !important;
+}
+@media(max-width:760px){
+  .template-card{min-height:340px !important}
+  .template-preview-wrap{height:255px !important;min-height:255px !important;max-height:255px !important}
+  .template-svg-preview{width:188px !important;height:240px !important;min-width:188px !important;min-height:240px !important;max-width:188px !important;max-height:240px !important}
+}
+
+/* One reliable dark mode state */
+html[data-cv-theme="dark"] body{
+  --bg:#070b16 !important;
+  --surface:#0f172a !important;
+  --surface-soft:#111827 !important;
+  --border:#243047 !important;
+  --border-strong:#334155 !important;
+  --text:#e5eefc !important;
+  --text-soft:#94a3b8 !important;
+  --accent:#60a5fa !important;
+  --accent-soft:#172554 !important;
+  --danger:#f87171 !important;
+  --success:#4ade80 !important;
+  background:
+    radial-gradient(900px 600px at 50% 12%,rgba(37,99,235,.18),transparent 58%),
+    linear-gradient(120deg,#050816 0%,#081225 46%,#160d26 76%,#071d27 100%) !important;
+  color:#e5eefc !important;
+}
+html[data-cv-theme="dark"] body::before{
+  background:
+    radial-gradient(circle at 10% 12%,rgba(37,99,235,.24),transparent 24%),
+    radial-gradient(circle at 86% 18%,rgba(124,58,237,.24),transparent 25%),
+    radial-gradient(circle at 58% 86%,rgba(6,182,212,.18),transparent 25%) !important;
+}
+html[data-cv-theme="dark"] .topbar,
+html[data-cv-theme="dark"] .editor-panel,
+html[data-cv-theme="dark"] .preview-head,
+html[data-cv-theme="dark"] .wizard-nav{
+  background:rgba(15,23,42,.9) !important;
+  color:#e5eefc !important;
+  border-color:#26354d !important;
+}
+html[data-cv-theme="dark"] .brand-name,
+html[data-cv-theme="dark"] h1,
+html[data-cv-theme="dark"] h2,
+html[data-cv-theme="dark"] h3,
+html[data-cv-theme="dark"] .field label,
+html[data-cv-theme="dark"] .step-description,
+html[data-cv-theme="dark"] .template-name,
+html[data-cv-theme="dark"] .repeat-card-title,
+html[data-cv-theme="dark"] .profile-name{
+  color:#e5eefc !important;
+}
+html[data-cv-theme="dark"] .field input,
+html[data-cv-theme="dark"] .field textarea,
+html[data-cv-theme="dark"] .field select,
+html[data-cv-theme="dark"] .btn-secondary,
+html[data-cv-theme="dark"] .btn-ghost,
+html[data-cv-theme="dark"] .small-btn,
+html[data-cv-theme="dark"] .add-btn,
+html[data-cv-theme="dark"] .order-item,
+html[data-cv-theme="dark"] .template-card,
+html[data-cv-theme="dark"] .skill-chip{
+  background:#0f172a !important;
+  color:#e5eefc !important;
+  border-color:#334155 !important;
+}
+html[data-cv-theme="dark"] .template-preview-wrap{background:linear-gradient(145deg,#111827,#0b1220) !important}
+html[data-cv-theme="dark"] .preview-panel{background:#020617 !important}
+html[data-cv-theme="dark"] .progress-bar,
+html[data-cv-theme="dark"] .progress-step{background:#0f172a !important;color:#cbd5e1 !important}
 </style>
 </head>
 <body>
-  <button id="floatingThemeToggle" class="floating-theme-toggle no-print" type="button" aria-pressed="false" title="Toggle dark mode"><span class="floating-theme-icon" aria-hidden="true">◐</span><span class="floating-theme-text">Dark mode</span></button>
   <div class="ambient-bg no-print" aria-hidden="true">
     <div class="ambient-grid"></div>
     <div class="ambient-orb orb-a"></div>
@@ -2607,26 +2709,21 @@ function formatRange(start, end) { return [start, end].filter(Boolean).join(" to
 function formatYearRange(start, end) { return [start, end].filter(Boolean).join(" to "); }
 
 function applyTheme() {
-  const dark = (localStorage.getItem("cvStudioTheme") || "light") === "dark";
-  document.body.classList.toggle("dark-ui", dark);
+  const dark = localStorage.getItem("cvStudioTheme") === "dark";
+  document.documentElement.setAttribute("data-cv-theme", dark ? "dark" : "light");
   if (els.themeToggleBtn) {
     els.themeToggleBtn.setAttribute("aria-pressed", String(dark));
     const label = $(".theme-label", els.themeToggleBtn);
     if (label) label.textContent = dark ? "Light mode" : "Dark mode";
-    const floating = $("#floatingThemeToggle");
-    if (floating) {
-      floating.setAttribute("aria-pressed", String(dark));
-      const ft = $(".floating-theme-text", floating);
-      const fi = $(".floating-theme-icon", floating);
-      if (ft) ft.textContent = dark ? "Light mode" : "Dark mode";
-      if (fi) fi.textContent = dark ? "☼" : "◐";
-    }
+    const icon = $(".theme-icon", els.themeToggleBtn);
+    if (icon) icon.textContent = dark ? "☼" : "◐";
   }
 }
 function toggleTheme() {
-  const dark = !document.body.classList.contains("dark-ui");
-  localStorage.setItem("cvStudioTheme", dark ? "dark" : "light");
+  const next = document.documentElement.getAttribute("data-cv-theme") !== "dark";
+  localStorage.setItem("cvStudioTheme", next ? "dark" : "light");
   applyTheme();
+  showToast(next ? "Dark mode enabled." : "Light mode enabled.");
 }
 function initAmbientMotion() {
   let frame = null;
@@ -2686,8 +2783,8 @@ function init() {
   els.mobilePreviewBtn.addEventListener("click", openMobilePreview);
   els.downloadTopBtn.addEventListener("click", printCv);
   if (els.themeToggleBtn) els.themeToggleBtn.addEventListener("click", toggleTheme);
-  const floatingThemeToggle = $("#floatingThemeToggle");
-  if (floatingThemeToggle) floatingThemeToggle.addEventListener("click", toggleTheme);
+  const themeButton = els.themeToggleBtn;
+  if (themeButton) themeButton.addEventListener("click", toggleTheme);
   applyTheme();
   document.addEventListener("keydown", event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
