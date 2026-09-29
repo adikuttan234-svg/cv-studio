@@ -1007,6 +1007,128 @@ body.dark-ui .template-thumb{background:#111827;border-color:#243047}
 .cv-page.textstyle-text-48{font-family:"IBM Plex Sans",Arial,sans-serif}.cv-page.textstyle-text-48 .cv-name{font-weight:650;letter-spacing:0.045em}.cv-page.textstyle-text-48 .cv-title{letter-spacing:0.095em}.cv-page.textstyle-text-48 .section-heading{letter-spacing:0.16499999999999998em;font-weight:700}.cv-page.textstyle-text-48 .section-content{line-height:1.46;letter-spacing:0.02em}
 .cv-page.textstyle-text-49{font-family:"Source Sans 3",Arial,sans-serif}.cv-page.textstyle-text-49 .cv-name{font-weight:650;letter-spacing:0.045em}.cv-page.textstyle-text-49 .cv-title{letter-spacing:0.095em}.cv-page.textstyle-text-49 .section-heading{letter-spacing:0.16499999999999998em;font-weight:700}.cv-page.textstyle-text-49 .section-content{line-height:1.46;letter-spacing:0.02em}
 .cv-page.textstyle-text-50{font-family:"Roboto",Arial,sans-serif}.cv-page.textstyle-text-50 .cv-name{font-weight:650;letter-spacing:0.045em}.cv-page.textstyle-text-50 .cv-title{letter-spacing:0.095em}.cv-page.textstyle-text-50 .section-heading{letter-spacing:0.16499999999999998em;font-weight:700}.cv-page.textstyle-text-50 .section-content{line-height:1.46;letter-spacing:0.02em}
+
+/* Visual template gallery */
+.design-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  max-height:680px;
+  overflow:auto;
+  padding:4px;
+}
+.template-card{
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:rgba(255,255,255,.82);
+  box-shadow:0 8px 22px rgba(15,23,42,.05);
+}
+.template-preview-wrap{
+  position:relative;
+  min-height:220px;
+  display:grid;
+  place-items:center;
+  padding:8px;
+  border-radius:13px;
+  background:linear-gradient(145deg,rgba(226,232,240,.72),rgba(248,250,252,.92));
+  overflow:hidden;
+}
+.template-zoom{
+  position:absolute;
+  inset:auto 8px 8px;
+  padding:7px 9px;
+  border-radius:9px;
+  background:rgba(15,23,42,.82);
+  color:#fff;
+  font-size:9px;
+  font-weight:800;
+  text-align:center;
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity .2s ease,transform .2s ease;
+}
+.template-card:hover .template-zoom,
+.template-card.active .template-zoom{opacity:1;transform:none}
+.mini-cv{
+  --mini-accent:#2563eb;
+  width:188px;
+  height:210px;
+  border-radius:8px;
+  background:#fff;
+  box-shadow:0 13px 30px rgba(15,23,42,.16);
+  border:1px solid rgba(148,163,184,.28);
+  padding:12px;
+  overflow:hidden;
+  color:#1f2937;
+  transform:translateZ(0);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease;
+}
+.template-card:hover .mini-cv{transform:translateY(-4px) scale(1.015);box-shadow:0 18px 38px rgba(15,23,42,.2)}
+.mini-header{display:flex;gap:9px;align-items:flex-start;border-bottom:2px solid var(--mini-accent);padding-bottom:9px}
+.mini-photo{width:31px;height:31px;border-radius:9px;background:linear-gradient(135deg,var(--mini-accent),#0f172a);flex:none}
+.mini-identity{min-width:0;flex:1}
+.mini-name{font-size:8px;font-weight:900;letter-spacing:-.03em;white-space:nowrap}
+.mini-role{font-size:5.6px;font-weight:800;color:var(--mini-accent);margin-top:3px;letter-spacing:.08em;white-space:nowrap}
+.mini-contact{display:flex;gap:4px;margin-top:5px}.mini-contact i{display:block;width:23px;height:3px;border-radius:3px;background:#cbd5e1}
+.mini-layout{display:grid;grid-template-columns:1fr;gap:8px;margin-top:9px}
+.mini-side{display:none}
+.mini-main{min-width:0}
+.mini-label{font-size:5.2px;letter-spacing:.13em;font-weight:900;color:var(--mini-accent);margin:5px 0 4px}
+.mini-lines{display:grid;gap:3px;margin-bottom:6px}.mini-lines i,.mini-entry i{display:block;height:3px;border-radius:3px;background:#d8dee8}.mini-lines i.short,.mini-entry i.short{width:60%}
+.mini-entry{position:relative;display:grid;gap:3px;margin:6px 0;padding-left:7px;border-left:2px solid var(--mini-accent)}
+.mini-entry strong{display:block;width:64%;height:4px;border-radius:3px;background:#334155}
+.mini-entry span{display:block;width:42%;height:3px;border-radius:3px;background:#94a3b8}
+.mini-footer{display:flex;gap:5px;margin-top:8px}.mini-footer span{height:3px;border-radius:3px;background:#cbd5e1;width:28%}
+
+/* 10 concrete miniature layout families */
+.mini-single .mini-header{border-bottom-width:2px}
+.mini-banner .mini-header{margin:-12px -12px 0;padding:12px;background:color-mix(in srgb,var(--mini-accent) 14%,white);border-bottom:0}
+.mini-sidebar .mini-layout{grid-template-columns:58px 1fr;gap:8px}
+.mini-sidebar .mini-side{display:block;padding:6px;background:color-mix(in srgb,var(--mini-accent) 10%,white);border-radius:6px}
+.mini-sidebar .mini-side .mini-label{margin-top:2px}
+.mini-sidebar .mini-main{padding-top:2px}
+.mini-timeline .mini-main{border-left:2px solid var(--mini-accent);padding-left:8px}
+.mini-timeline .mini-entry::before{content:"";position:absolute;left:-12px;top:0;width:5px;height:5px;border-radius:50%;background:var(--mini-accent)}
+.mini-split .mini-layout{grid-template-columns:1fr 1fr;gap:7px}
+.mini-split .mini-side{display:block;padding-left:5px;border-left:2px solid var(--mini-accent)}
+.mini-compact{padding:9px}.mini-compact .mini-header{padding-bottom:6px}.mini-compact .mini-layout{margin-top:6px;gap:5px}.mini-compact .mini-entry{margin:4px 0}
+.mini-editorial{font-family:Georgia,"Times New Roman",serif}.mini-editorial .mini-header{border-bottom:1px solid #111}.mini-editorial .mini-label{font-family:Inter,sans-serif;border-bottom:1px solid var(--mini-accent);padding-bottom:3px}
+.mini-dark{background:#0b1220;color:#e5eefc;border-color:#22314d}.mini-dark .mini-header{background:#0f172a;margin:-12px -12px 0;padding:12px;border-bottom-color:var(--mini-accent)}.mini-dark .mini-lines i,.mini-dark .mini-entry i{background:#475569}.mini-dark .mini-entry strong{background:#f8fafc}.mini-dark .mini-entry span{background:#94a3b8}.mini-dark .mini-footer span{background:#334155}
+.mini-grid{background-image:linear-gradient(rgba(37,99,235,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,.08) 1px,transparent 1px);background-size:13px 13px}.mini-grid .mini-entry{padding:6px;border:1px solid color-mix(in srgb,var(--mini-accent) 28%,transparent);border-left:2px solid var(--mini-accent);background:rgba(255,255,255,.85);border-radius:4px}
+.mini-centered .mini-header{justify-content:center;text-align:center}.mini-centered .mini-photo{order:-1}.mini-centered .mini-identity{flex:none}.mini-centered .mini-layout{display:block;text-align:center}.mini-centered .mini-lines{justify-items:center}.mini-centered .mini-lines i{width:90%}.mini-centered .mini-lines i.short{width:55%}.mini-centered .mini-label{display:flex;align-items:center;justify-content:center;gap:4px}.mini-centered .mini-label::before,.mini-centered .mini-label::after{content:"";height:1px;background:var(--mini-accent);width:20px}
+
+/* 50 accent variations */
+.mini-cv.preset-01{--mini-accent:#2563eb}.mini-cv.preset-02{--mini-accent:#7c3aed}.mini-cv.preset-03{--mini-accent:#06b6d4}.mini-cv.preset-04{--mini-accent:#0f766e}.mini-cv.preset-05{--mini-accent:#db2777}
+.mini-cv.preset-06{--mini-accent:#ea580c}.mini-cv.preset-07{--mini-accent:#4f46e5}.mini-cv.preset-08{--mini-accent:#0891b2}.mini-cv.preset-09{--mini-accent:#334155}.mini-cv.preset-10{--mini-accent:#111827}
+.mini-cv.preset-11{--mini-accent:#2563eb}.mini-cv.preset-12{--mini-accent:#7c3aed}.mini-cv.preset-13{--mini-accent:#06b6d4}.mini-cv.preset-14{--mini-accent:#0f766e}.mini-cv.preset-15{--mini-accent:#db2777}
+.mini-cv.preset-16{--mini-accent:#ea580c}.mini-cv.preset-17{--mini-accent:#4f46e5}.mini-cv.preset-18{--mini-accent:#0891b2}.mini-cv.preset-19{--mini-accent:#334155}.mini-cv.preset-20{--mini-accent:#111827}
+.mini-cv.preset-21{--mini-accent:#2563eb}.mini-cv.preset-22{--mini-accent:#7c3aed}.mini-cv.preset-23{--mini-accent:#06b6d4}.mini-cv.preset-24{--mini-accent:#0f766e}.mini-cv.preset-25{--mini-accent:#db2777}
+.mini-cv.preset-26{--mini-accent:#ea580c}.mini-cv.preset-27{--mini-accent:#4f46e5}.mini-cv.preset-28{--mini-accent:#0891b2}.mini-cv.preset-29{--mini-accent:#334155}.mini-cv.preset-30{--mini-accent:#111827}
+.mini-cv.preset-31{--mini-accent:#2563eb}.mini-cv.preset-32{--mini-accent:#7c3aed}.mini-cv.preset-33{--mini-accent:#06b6d4}.mini-cv.preset-34{--mini-accent:#0f766e}.mini-cv.preset-35{--mini-accent:#db2777}
+.mini-cv.preset-36{--mini-accent:#ea580c}.mini-cv.preset-37{--mini-accent:#4f46e5}.mini-cv.preset-38{--mini-accent:#0891b2}.mini-cv.preset-39{--mini-accent:#334155}.mini-cv.preset-40{--mini-accent:#111827}
+.mini-cv.preset-41{--mini-accent:#2563eb}.mini-cv.preset-42{--mini-accent:#7c3aed}.mini-cv.preset-43{--mini-accent:#06b6d4}.mini-cv.preset-44{--mini-accent:#0f766e}.mini-cv.preset-45{--mini-accent:#db2777}
+.mini-cv.preset-46{--mini-accent:#ea580c}.mini-cv.preset-47{--mini-accent:#4f46e5}.mini-cv.preset-48{--mini-accent:#0891b2}.mini-cv.preset-49{--mini-accent:#334155}.mini-cv.preset-50{--mini-accent:#111827}
+
+.template-library-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin:-4px 0 8px;
+  color:var(--text-soft);
+  font-size:10px;
+  font-weight:700;
+}
+.template-library-meta span:first-child{color:var(--premium-blue)}
+body.dark-ui .template-card{background:rgba(15,23,42,.82)}
+body.dark-ui .template-preview-wrap{background:linear-gradient(145deg,#111827,#0f172a)}
+body.dark-ui .template-zoom{background:rgba(96,165,250,.92);color:#07111f}
+@media(max-width:760px){
+  .design-grid{grid-template-columns:1fr;max-height:520px}
+  .template-preview-wrap{min-height:235px}
+  .mini-cv{width:205px;height:220px}
+  .template-library-meta{flex-direction:column;gap:3px}
+}
+
 </style>
 </head>
 <body>
@@ -1634,15 +1756,28 @@ function linksMarkup(cv) {
 }
 
 function designMarkup(cv) {
-  const templateCards = TEMPLATE_OPTIONS.map((t, index) =>
-    '<button type="button" class="template-card ' + (cv.settings.template === t.id ? 'active' : '') + '" data-template="' + escapeAttr(t.id) + '" data-template-name="' + escapeAttr(t.name) + '">' +
-      '<div class="template-thumb preset-' + String(index + 1).padStart(2, "0") + ' ' + (t.layout === "dark" ? 'dev-thumb' : '') + '">' +
-        '<div class="thumb-head"></div><div class="thumb-line"></div><div class="thumb-line short"></div><div class="thumb-columns"><div class="thumb-col"></div><div class="thumb-col"></div></div><div class="thumb-line"></div>' +
+  const templateCards = TEMPLATE_OPTIONS.map((t, index) => {
+    const preset = String(index + 1).padStart(2, '0');
+    const family = t.layout || 'single';
+    const selected = cv.settings.template === t.id ? 'active' : '';
+    const badge = t.id.startsWith('gallery-') ? '<span class="template-badge">NEW</span>' : '';
+    const mini = '<div class="mini-cv preset-' + preset + ' mini-' + family + '" aria-hidden="true">' +
+      '<div class="mini-header">' +
+        '<div class="mini-photo"></div>' +
+        '<div class="mini-identity"><div class="mini-name">YOUR NAME</div><div class="mini-role">PRODUCT DESIGNER</div><div class="mini-contact"><i></i><i></i><i></i></div></div>' +
       '</div>' +
-      '<div class="template-name">' + escapeHtml(t.name) + (t.id.startsWith('gallery-') ? '<span class="template-badge">NEW</span>' : '') + '</div>' +
+      '<div class="mini-layout">' +
+        '<aside class="mini-side"><div class="mini-label">SKILLS</div><div class="mini-pillrow"><b></b><b></b><b></b></div><div class="mini-label">TOOLS</div><div class="mini-lines"><i></i><i></i><i class="short"></i></div></aside>' +
+        '<div class="mini-main"><div class="mini-label">PROFILE</div><div class="mini-lines"><i></i><i></i><i class="short"></i></div><div class="mini-label">EXPERIENCE</div><div class="mini-entry"><strong></strong><span></span><i></i><i></i></div><div class="mini-entry"><strong></strong><span></span><i></i><i class="short"></i></div></div>' +
+      '</div>' +
+      '<div class="mini-footer"><span></span><span></span><span></span></div>' +
+    '</div>';
+    return '<button type="button" class="template-card ' + selected + '" data-template="' + escapeAttr(t.id) + '" data-template-name="' + escapeAttr(t.name) + '">' +
+      '<div class="template-preview-wrap">' + mini + '<div class="template-zoom">Click to use</div></div>' +
+      '<div class="template-name">' + escapeHtml(t.name) + badge + '</div>' +
       '<div class="template-desc">' + escapeHtml(t.desc) + '</div>' +
-    '</button>'
-  ).join('');
+    '</button>';
+  }).join('');
 
   const order = cv.settings.sectionOrder.filter(id => ALL_SECTION_IDS.includes(id));
   const orderItems = order.map((id, i) => '<div class="order-item" draggable="true" data-section-id="' + id + '"><span class="order-grip">☷</span><span>' + escapeHtml(SECTION_LABELS[id]) + '</span><small>' + (hasSectionData(id, cv) ? 'Used' : 'Empty') + '</small><label class="checkbox-row"><input type="checkbox" data-section-toggle="' + id + '" ' + (isSectionEnabled(id, cv) ? 'checked' : '') + ' aria-label="Show ' + escapeAttr(SECTION_LABELS[id]) + ' section" /></label><button type="button" data-action="moveSection" data-index="' + i + '" data-direction="up" aria-label="Move section up">↑</button><button type="button" data-action="moveSection" data-index="' + i + '" data-direction="down" aria-label="Move section down">↓</button></div>').join('');
@@ -1650,12 +1785,13 @@ function designMarkup(cv) {
   const fontOptions = FONT_OPTIONS.map(font => '<option value="' + escapeAttr(font) + '" ' + (cv.settings.font === font ? 'selected' : '') + '>' + escapeHtml(font) + '</option>').join('');
 
   return '<div class="form-section design-studio">' +
-    '<div class="design-toolbar"><div><h3>Template Library <span class="library-count">50 styles</span></h3><div class="hint">Choose a layout, then refine the typography and spacing.</div></div><div class="template-search-wrap"><input id="templateSearch" type="search" placeholder="Search templates..." aria-label="Search templates" /></div></div>' +
+    '<div class="design-toolbar"><div><h3>Template Library <span class="library-count">50 styles</span></h3><div class="hint">Real visual previews, not placeholder lines. Click a design to apply it instantly.</div></div><div class="template-search-wrap"><input id="templateSearch" type="search" placeholder="Search templates..." aria-label="Search templates" /></div></div>' +
+    '<div class="template-library-meta"><span>50 template designs</span><span>Live A4 preview updates instantly</span></div>' +
     '<div class="design-grid" id="templateGrid">' + templateCards + '</div>' +
     '<div class="form-divider"></div>' +
     '<div><h3>Text Style Library <span class="library-count">50 styles</span></h3>' +
       '<div class="field-grid"><div class="field"><label for="textStyleSelect">Text Style</label><select id="textStyleSelect" data-path="settings.textStyle">' + textOptions + '</select></div><div class="field"><label for="fontSelect">Base Font</label><select id="fontSelect" data-path="settings.font">' + fontOptions + '</select></div></div>' +
-      '<div class="text-style-preview"><strong>Type preview</strong><span>The quick brown fox jumps over the lazy dog.</span></div>' +
+      '<div class="text-style-preview"><strong>Typography preview</strong><span>The quick brown fox jumps over the lazy dog.</span></div>' +
     '</div>' +
     '<div class="form-divider"></div>' +
     '<div class="field-grid"><div class="field"><label>Accent Color</label><div class="color-field"><input type="color" id="accentColor" data-path="settings.accentColor" value="' + escapeAttr(cv.settings.accentColor) + '" /><input data-path="settings.accentColor" value="' + escapeAttr(cv.settings.accentColor) + '" aria-label="Accent color hex value" /></div></div>' +
