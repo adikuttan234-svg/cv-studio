@@ -837,6 +837,7 @@ body::before {
         </div>
       </div>
       <div class="top-actions">
+        <button class="btn btn-ghost theme-toggle" id="themeToggleBtn" type="button" aria-pressed="false" title="Toggle dark mode"><span class="theme-icon" aria-hidden="true">◐</span><span class="theme-label">Dark mode</span></button>
         <div class="cv-profile-select-wrap">
           <label for="profileSelect">CV</label>
           <select id="profileSelect" aria-label="Select CV profile"></select>
@@ -933,13 +934,25 @@ body::before {
 const STORAGE_KEY = "cvStudioProfilesV1";
 const ACTIVE_KEY = "cvStudioActiveV1";
 const FONT_OPTIONS = ["Inter", "Manrope", "IBM Plex Sans", "Source Sans 3", "Roboto"];
-const TEMPLATE_OPTIONS = [
-  { id: "modern", name: "Modern Minimal", desc: "Clean single column with strong hierarchy." },
-  { id: "corporate", name: "Professional Corporate", desc: "Structured headings with a restrained accent." },
-  { id: "developer", name: "Developer", desc: "Dark document style for technical profiles." },
-  { id: "two-column", name: "Clean Two Column", desc: "Compact sidebar and main content structure." },
-  { id: "elegant", name: "Elegant Minimal", desc: "Centered typography with refined spacing." }
+const BASE_TEMPLATE_OPTIONS = [
+  { id: "modern", name: "Modern Minimal", desc: "Clean single column with strong hierarchy.", layout: "single" },
+  { id: "corporate", name: "Professional Corporate", desc: "Structured headings with a restrained accent.", layout: "banner" },
+  { id: "developer", name: "Developer", desc: "Dark document style for technical profiles.", layout: "dark" },
+  { id: "two-column", name: "Clean Two Column", desc: "Compact sidebar and main content structure.", layout: "sidebar" },
+  { id: "elegant", name: "Elegant Minimal", desc: "Centered typography with refined spacing.", layout: "centered" }
 ];
+const TEMPLATE_NAMES = ["Midnight Editorial","Nordic Air","Swiss Grid","Bold Portfolio","Blue Ribbon","Violet Studio","Aqua Tech","Slate Executive","Monochrome Luxe","Soft Corner","Timeline Pro","Classic Serif","Neo Minimal","Resume Stack","Gridline","Focus Sidebar","Creative Split","Executive Beam","Code Canvas","Paper Cut","Signal Modern","Studio Dark","Quiet Luxury","Orbit","Metro Resume","Atlas","Prism","Vertex","Flow","Frame","Contrast","Minimal Black","Cobalt Edge","Lavender Line","Iceberg","Carbon","Aurora","Studio White","Copper Ink","Oceanic","Gallery","Precision","Blueprint","Columnist","Nova"];
+const TEMPLATE_OPTIONS = [...BASE_TEMPLATE_OPTIONS, ...TEMPLATE_NAMES.map((name, index) => ({
+  id: "gallery-" + String(index + 6).padStart(2, "0"),
+  name,
+  desc: "Professional " + ["single","sidebar","banner","timeline","split","compact","editorial","dark","grid","centered"][index % 10] + " layout with curated spacing and hierarchy.",
+  layout: ["single","sidebar","banner","timeline","split","compact","editorial","dark","grid","centered"][index % 10]
+}))];
+const TEXT_STYLE_NAMES = ["Inter Air","Inter Editorial","Inter Precision","Inter Strong","Inter Compact","Manrope Air","Manrope Editorial","Manrope Precision","Manrope Strong","Manrope Compact","IBM Plex Air","IBM Plex Editorial","IBM Plex Precision","IBM Plex Strong","IBM Plex Compact","Source Sans Air","Source Sans Editorial","Source Sans Precision","Source Sans Strong","Source Sans Compact","Roboto Air","Roboto Editorial","Roboto Precision","Roboto Strong","Roboto Compact","Inter Mono Accent","Manrope Wide","Plex Condensed","Source Sans Humanist","Roboto Compact Caps","Inter Uppercase","Manrope Soft","Plex Technical","Source Sans Classic","Roboto Corporate","Inter Display","Manrope Display","Plex Newspaper","Source Sans Modern","Roboto Elegant","Inter Narrow","Manrope Narrow","Plex Square","Source Sans Thin","Roboto Airy","Inter Dense","Manrope Dense","Plex Dense","Source Sans Dense","Roboto Dense"];
+const TEXT_STYLE_OPTIONS = TEXT_STYLE_NAMES.map((name, index) => ({
+  id: "text-" + String(index + 1).padStart(2, "0"),
+  name
+}));
 const STEPS = [
   { id: "personal", title: "Personal Details", desc: "Add your basic contact information. Optional fields can be left blank." },
   { id: "profile", title: "Profile", desc: "Write a concise professional summary. Keep it factual and specific." },
@@ -998,7 +1011,8 @@ const els = {
   welcomeBackdrop: $("#welcomeBackdrop"),
   welcomeExisting: $("#welcomeExisting"),
   continuePreviousBtn: $("#continuePreviousBtn"),  welcomeScratchBtn: $("#welcomeScratchBtn"),
-  welcomeExampleBtn: $("#welcomeExampleBtn")
+  welcomeExampleBtn: $("#welcomeExampleBtn"),
+  themeToggleBtn: $("#themeToggleBtn")
 };
 
 let profiles = loadProfiles();
@@ -1036,6 +1050,7 @@ function blankCv(name = "Untitled CV") {
       textSize: 10.4,
       spacing: 1,
       sectionStyle: "bar",
+      textStyle: "text-01",
       enabledSections: Object.fromEntries(ALL_SECTION_IDS.map(id => [id, CORE_SECTION_IDS.includes(id)])),
       sectionOrder: ["profile", "experience", "education", "skills", "projects", "certificates", "achievements", "languages", "interests", "volunteer", "references", "links"]
     }
@@ -1059,6 +1074,7 @@ function normalizeCv(data) {
   }
   if (!merged.settings.enabledSections || typeof merged.settings.enabledSections !== "object") merged.settings.enabledSections = { ...base.settings.enabledSections };
   merged.settings.enabledSections = { ...base.settings.enabledSections, ...merged.settings.enabledSections };
+  if (!merged.settings.textStyle || !TEXT_STYLE_OPTIONS.some(item => item.id === merged.settings.textStyle)) merged.settings.textStyle = "text-01";
   if (!Array.isArray(merged.settings.sectionOrder)) merged.settings.sectionOrder = [...base.settings.sectionOrder];
   merged.settings.sectionOrder = [...new Set([...merged.settings.sectionOrder, ...ALL_SECTION_IDS])].filter(id => ALL_SECTION_IDS.includes(id));
   return merged;
