@@ -1,0 +1,46 @@
+name: Validate CV Studio
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("index.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script(?:\s[^>]*)?>([\s\S]*?)</script>", html, flags=re.I)
+          if not scripts:
+              raise SystemExit("No inline JavaScript block found")
+          Path("/tmp/cv-studio-script.js").write_text(scripts[-1], encoding="utf-8")
+          print("Inline JS characters:", len(scripts[-1]))
+          PY
+          node --check /tmp/cv-studio-script.js
+      - name: Validate preset counts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("index.html").read_text(encoding="utf-8")
+          tm = re.search(r"const TEMPLATE_NAMES = (\[[\s\S]*?\]);", html)
+          ts = re.search(r"const TEXT_STYLE_NAMES = (\[[\s\S]*?\]);", html)
+          if not tm or len(eval(tm.group(1))) != 45:
+              raise SystemExit("Expected 45 new template presets")
+          if not ts or len(eval(ts.group(1))) != 50:
+              raise SystemExit("Expected 50 text presets")
+          if "themeToggleBtn" not in html or "function toggleTheme" not in html:
+              raise SystemExit("Dark mode control missing")
+          if "function iconSvg" not in html:
+              raise SystemExit("Social icons missing")
+          print("Preset and feature checks passed")
+          PY
