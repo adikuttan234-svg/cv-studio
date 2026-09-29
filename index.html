@@ -1553,10 +1553,17 @@ function bindStepEvents() {
     scheduleSave(); renderStep(); renderPreview();
   }));
   $$('[data-add]', els.stepContent).forEach(btn => btn.addEventListener("click", () => addRepeat(btn.dataset.add)));
-  $$('[data-template]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+  $('[data-template]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
     currentCv().settings.template = btn.dataset.template;
     scheduleSave(); renderStep(); renderPreview();
   }));
+  const templateSearch = $("#templateSearch", els.stepContent);
+  if (templateSearch) templateSearch.addEventListener("input", () => {
+    const query = templateSearch.value.trim().toLowerCase();
+    $(".template-card", els.stepContent).forEach(card => {
+      card.hidden = Boolean(query && !card.dataset.templateName.toLowerCase().includes(query));
+    });
+  });
   $$('[data-action="addArrayValue"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
     const cv = currentCv();
     if (!Array.isArray(cv[btn.dataset.path])) cv[btn.dataset.path] = [];
@@ -1900,7 +1907,8 @@ function printCv() {
   currentStep = 9;
   renderStep();
   renderPreview();
-  setTimeout(() => window.print(), 80);
+  document.body.classList.add("printing");
+  setTimeout(() => window.print(), 120);
 }
 
 async function loadHtml2Canvas() {
@@ -1946,7 +1954,8 @@ function renderPreview() {
 
 function buildCvPage(cv) {
   const page = document.createElement("div");
-  page.className = `cv-page template-${cv.settings.template} section-style-${cv.settings.sectionStyle || "bar"}`;
+  const templateInfo = TEMPLATE_OPTIONS.find(t => t.id === cv.settings.template) || BASE_TEMPLATE_OPTIONS[0];
+  page.className = `cv-page template-${cv.settings.template} layout-${templateInfo.layout || "single"} textstyle-${cv.settings.textStyle || "text-01"} section-style-${cv.settings.sectionStyle || "bar"}`;
   page.style.setProperty("--cv-accent", cv.settings.accentColor || "#2563eb");
   page.style.setProperty("--cv-size", `${Number(cv.settings.textSize || 10.4)}px`);
   page.style.setProperty("--cv-space", String(Number(cv.settings.spacing || 1)));
@@ -1977,7 +1986,7 @@ function buildCvPage(cv) {
   header.appendChild(inner);
   page.appendChild(header);
 
-  if (cv.settings.template === "two-column") {
+  if (templateInfo.layout === "sidebar") {
     const sidebar = document.createElement("aside"); sidebar.className = "cv-sidebar";
     const main = document.createElement("main"); main.className = "cv-main";
     const all = cv.settings.sectionOrder.filter(id => ALL_SECTION_IDS.includes(id) && hasSectionData(id, cv));
@@ -1996,12 +2005,23 @@ function buildCvPage(cv) {
   return page;
 }
 
+function iconSvg(label) {
+  const name = String(label || "").toLowerCase();
+  if (name === "linkedin") return '<svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.1 8.4H2.2V17h2.9V8.4ZM3.65 2.2A1.72 1.72 0 1 0 3.65 5.64 1.72 1.72 0 0 0 3.65 2.2ZM17.8 11.72c0-2.6-1.4-3.82-3.28-3.82-1.5 0-2.18.82-2.56 1.4V8.4H9.08V17h2.88v-4.26c0-1.13.2-2.22 1.6-2.22 1.38 0 1.4 1.29 1.4 2.3V17h2.84v-5.28Z"/></svg>';
+  if (name === "github") return '<svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.47.09.65-.2.65-.45v-1.58c-2.65.58-3.21-1.12-3.21-1.12-.43-1.1-1.06-1.4-1.06-1.4-.87-.6.07-.59.07-.59.96.07 1.46.99 1.46.99.85 1.45 2.22 1.03 2.76.79.09-.62.33-1.03.6-1.27-2.11-.24-4.33-1.05-4.33-4.7 0-1.04.37-1.89.98-2.56-.1-.24-.42-1.21.09-2.53 0 0 .8-.26 2.62.98a9.16 9.16 0 0 1 4.77 0c1.82-1.24 2.62-.98 2.62-.98.51 1.32.19 2.29.09 2.53.61.67.98 1.52.98 2.56 0 3.66-2.23 4.46-4.35 4.69.34.29.64.84.64 1.7v2.52c0 .25.17.54.65.45A9.5 9.5 0 0 0 12 2.5Z"/></svg>';
+  return '<svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/></svg>';
+}
 function addContact(container, text, href = "", label = "") {
   if (!text) return;
   const node = href ? document.createElement("a") : document.createElement("span");
   if (href) { node.href = href; node.target = "_blank"; node.rel = "noopener noreferrer"; }
   const compactText = href && /^https?:\/\//i.test(text) ? compactUrl(text) : text;
-  node.textContent = label ? `${label}: ${compactText}` : compactText;
+  if (label) {
+    node.innerHTML = iconSvg(label);
+    const copy = document.createElement("span");
+    copy.textContent = `${label}: ${compactText}`;
+    node.appendChild(copy);
+  } else node.textContent = compactText;
   container.appendChild(node);
 }
 function compactUrl(url) {
@@ -2132,7 +2152,7 @@ function renderLinksSection(parent, cv) {
   if (!fields.length) return;
   const { section, content } = makeSection("Links");
   const grid = document.createElement("div"); grid.className = "links-grid";
-  fields.forEach(([label, value]) => { const item = document.createElement("div"); item.className = "link-item"; const l = document.createElement("span"); l.className = "link-label"; l.textContent = `${label}:`; const a = document.createElement("a"); a.className = "cv-link"; a.href = safeUrl(value); a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = compactUrl(value); item.append(l, a); grid.appendChild(item); });
+  fields.forEach(([label, value]) => { const item = document.createElement("div"); item.className = "link-item"; const l = document.createElement("span"); l.className = "link-label"; l.innerHTML = iconSvg(label) + '<span>' + escapeHtml(label) + ':</span>'; const a = document.createElement("a"); a.className = "cv-link"; a.href = safeUrl(value); a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = compactUrl(value); item.append(l, a); grid.appendChild(item); });
   content.appendChild(grid); parent.appendChild(section);
 }
 function renderSimpleArraySection(parent, cv, path, title) {
@@ -2166,6 +2186,20 @@ function appendLink(parent, href, label) { const a = document.createElement("a")
 function formatRange(start, end) { return [start, end].filter(Boolean).join(" to "); }
 function formatYearRange(start, end) { return [start, end].filter(Boolean).join(" to "); }
 
+function applyTheme() {
+  const dark = (localStorage.getItem("cvStudioTheme") || "light") === "dark";
+  document.body.classList.toggle("dark-ui", dark);
+  if (els.themeToggleBtn) {
+    els.themeToggleBtn.setAttribute("aria-pressed", String(dark));
+    const label = $(".theme-label", els.themeToggleBtn);
+    if (label) label.textContent = dark ? "Light mode" : "Dark mode";
+  }
+}
+function toggleTheme() {
+  const dark = !document.body.classList.contains("dark-ui");
+  localStorage.setItem("cvStudioTheme", dark ? "dark" : "light");
+  applyTheme();
+}
 function initAmbientMotion() {
   let frame = null;
   const update = (x, y) => {
@@ -2223,6 +2257,8 @@ function init() {
   els.saveBtn.addEventListener("click", () => { persistProfiles(); setSaveState("Saved", true); showToast("CV saved in this browser."); });
   els.mobilePreviewBtn.addEventListener("click", openMobilePreview);
   els.downloadTopBtn.addEventListener("click", printCv);
+  if (els.themeToggleBtn) els.themeToggleBtn.addEventListener("click", toggleTheme);
+  applyTheme();
   document.addEventListener("keydown", event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
       event.preventDefault();
@@ -2243,6 +2279,8 @@ function init() {
 }
 
 init();
+
+window.addEventListener("afterprint", () => document.body.classList.remove("printing"));
 
   </script>
 </body>
