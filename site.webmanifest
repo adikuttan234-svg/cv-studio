@@ -1,0 +1,10 @@
+{
+  "name": "CV Studio",
+  "short_name": "CV Studio",
+  "description": "Private browser based CV builder with live A4 preview and print ready PDF export.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0f172a",
+  "icons": []
+}
