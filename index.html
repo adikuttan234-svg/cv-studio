@@ -997,4 +997,1228 @@ const els = {
   newProfileBtn: $("#newProfileBtn"),
   welcomeBackdrop: $("#welcomeBackdrop"),
   welcomeExisting: $("#welcomeExisting"),
-  continuePreviousBtn: $("#continuePreviousBtn"),
+  continuePreviousBtn: $("#continuePreviousBtn"),  welcomeScratchBtn: $("#welcomeScratchBtn"),
+  welcomeExampleBtn: $("#welcomeExampleBtn")
+};
+
+let profiles = loadProfiles();
+let activeId = localStorage.getItem(ACTIVE_KEY) || "";
+let currentStep = 0;
+let saveTimer = null;
+let dragSectionId = null;
+
+function uid(prefix = "cv") {
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function blankCv(name = "Untitled CV") {
+  return {
+    id: uid(),
+    name,
+    updatedAt: Date.now(),
+    personal: { name: "", title: "", email: "", phone: "", location: "", photo: "" },
+    profile: "",
+    experience: [],
+    education: [],
+    skills: [],
+    projects: [],
+    certificates: [],
+    links: { linkedin: "", github: "", portfolio: "", website: "", other: "" },
+    achievements: [],
+    languages: [],
+    interests: [],
+    volunteer: [],
+    references: [],
+    settings: {
+      template: "modern",
+      font: "Inter",
+      accentColor: "#2563eb",
+      textSize: 10.4,
+      spacing: 1,
+      sectionStyle: "bar",
+      enabledSections: Object.fromEntries(ALL_SECTION_IDS.map(id => [id, CORE_SECTION_IDS.includes(id)])),
+      sectionOrder: ["profile", "experience", "education", "skills", "projects", "certificates", "achievements", "languages", "interests", "volunteer", "references", "links"]
+    }
+  };
+}
+
+function normalizeCv(data) {
+  const base = blankCv(data?.name || "Untitled CV");
+  const merged = {
+    ...base,
+    ...data,
+    personal: { ...base.personal, ...(data?.personal || {}) },
+    links: { ...base.links, ...(data?.links || {}) },
+    settings: { ...base.settings, ...(data?.settings || {}) }
+  };
+  merged.id = data?.id || base.id;
+  merged.updatedAt = data?.updatedAt || Date.now();
+  merged.name = data?.name || "Untitled CV";
+  for (const key of ["experience", "education", "skills", "projects", "certificates", "achievements", "languages", "interests", "volunteer", "references"]) {
+    if (!Array.isArray(merged[key])) merged[key] = [];
+  }
+  if (!merged.settings.enabledSections || typeof merged.settings.enabledSections !== "object") merged.settings.enabledSections = { ...base.settings.enabledSections };
+  merged.settings.enabledSections = { ...base.settings.enabledSections, ...merged.settings.enabledSections };
+  if (!Array.isArray(merged.settings.sectionOrder)) merged.settings.sectionOrder = [...base.settings.sectionOrder];
+  merged.settings.sectionOrder = [...new Set([...merged.settings.sectionOrder, ...ALL_SECTION_IDS])].filter(id => ALL_SECTION_IDS.includes(id));
+  return merged;
+}
+
+function loadProfiles() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(normalizeCv) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistProfiles() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+    localStorage.setItem(ACTIVE_KEY, activeId);
+    return true;
+  } catch {
+    setSaveState("Storage full", false);
+    showToast("Browser storage is full. A large photo may be using too much space.");
+    return false;
+  }
+}
+
+function currentCv() {
+  return profiles.find(p => p.id === activeId) || null;
+}
+
+function setActive(id) {
+  if (!profiles.some(p => p.id === id)) return;
+  activeId = id;
+  localStorage.setItem(ACTIVE_KEY, activeId);
+  renderProfileSelect();
+  renderStep();
+  renderPreview();
+  renderProfileList();
+}
+
+function createProfile(name = "Untitled CV", source = null) {
+  const item = source ? normalizeCv(JSON.parse(JSON.stringify(source))) : blankCv(name);
+  item.id = uid();
+  item.name = name;
+  item.updatedAt = Date.now();
+  profiles.push(item);
+  setActive(item.id);
+  persistProfiles();
+  return item;
+}
+
+function scheduleSave() {
+  setSaveState("Saving…", true);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const cv = currentCv();
+    if (cv) cv.updatedAt = Date.now();
+    persistProfiles();
+    setSaveState("Saved", true);
+  }, 450);
+}
+
+function setSaveState(label, ok = true) {
+  els.saveState.textContent = label;
+  els.saveState.style.color = ok ? "var(--success)" : "var(--danger)";
+}
+
+function showToast(message) {
+  let wrap = $(".toast-wrap");
+  if (!wrap) {
+    wrap = document.createElement("div");
+    wrap.className = "toast-wrap no-print";
+    document.body.appendChild(wrap);
+  }
+  const node = document.createElement("div");
+  node.className = "toast";
+  node.textContent = message;
+  wrap.appendChild(node);
+  setTimeout(() => node.remove(), 2600);
+}
+
+function escapeText(value) {
+  return String(value ?? "");
+}
+
+function safeUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+}
+
+function validEmail(value) {
+  const raw = String(value || "").trim();
+  return !raw || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw);
+}
+
+function validPhone(value) {
+  const raw = String(value || "").trim();
+  return !raw || /^[+()\d\s.-]{7,22}$/.test(raw);
+}
+
+function setByPath(obj, path, value) {
+  const parts = path.split(".");
+  let ref = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const key = parts[i];
+    if (!(key in ref) || ref[key] == null) ref[key] = /^\d+$/.test(parts[i + 1]) ? [] : {};
+    ref = ref[key];
+  }
+  ref[parts.at(-1)] = value;
+}
+
+function getByPath(obj, path, fallback = "") {
+  return path.split(".").reduce((acc, key) => acc == null ? undefined : acc[key], obj) ?? fallback;
+}
+
+function fieldTemplate({ label, path, type = "text", value = "", placeholder = "", optional = false, full = false, required = false, min = "", max = "", step = "", autocomplete = "off" }) {
+  return `
+    <div class="field ${full ? "full" : ""}" data-field-wrap="${path}">
+      <label for="field_${path.replaceAll(".", "_")}">${escapeHtml(label)}${optional ? '<span class="optional-label">Optional</span>' : ""}</label>
+      <input id="field_${path.replaceAll(".", "_")}" data-path="${path}" type="${type}" value="${escapeAttr(value)}" placeholder="${escapeAttr(placeholder)}" ${required ? "required" : ""} ${min !== "" ? `min="${min}"` : ""} ${max !== "" ? `max="${max}"` : ""} ${step !== "" ? `step="${step}"` : ""} autocomplete="${autocomplete}" />
+      <div class="error-text hidden" data-error-for="${path}"></div>
+    </div>`;
+}
+
+function textareaTemplate({ label, path, value = "", placeholder = "", optional = false, full = true, rows = 6 }) {
+  return `
+    <div class="field ${full ? "full" : ""}" data-field-wrap="${path}">
+      <label for="field_${path.replaceAll(".", "_")}">${escapeHtml(label)}${optional ? '<span class="optional-label">Optional</span>' : ""}</label>
+      <textarea id="field_${path.replaceAll(".", "_")}" data-path="${path}" rows="${rows}" placeholder="${escapeAttr(placeholder)}">${escapeHtml(value)}</textarea>
+      <div class="error-text hidden" data-error-for="${path}"></div>
+    </div>`;
+}
+
+function escapeHtml(value) {
+  return escapeText(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+function escapeAttr(value) { return escapeHtml(value); }
+
+function renderProgress() {
+  els.progressBar.innerHTML = "";
+  STEPS.forEach((step, index) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `progress-step ${index === currentStep ? "active" : ""} ${index < currentStep ? "done" : ""}`;
+    btn.dataset.step = index;
+    btn.innerHTML = `<span class="progress-num">${index + 1}</span><span>${escapeHtml(step.title)}</span>`;
+    btn.addEventListener("click", () => goToStep(index));
+    els.progressBar.appendChild(btn);
+    if (index < STEPS.length - 1) {
+      const arrow = document.createElement("span");
+      arrow.className = "progress-arrow";
+      arrow.textContent = "›";
+      arrow.setAttribute("aria-hidden", "true");
+      els.progressBar.appendChild(arrow);
+    }
+  });
+}
+
+function renderStep() {
+  const step = STEPS[currentStep];
+  els.stepEyebrow.textContent = `STEP ${currentStep + 1} OF ${STEPS.length}`;
+  els.stepTitle.textContent = step.title;
+  els.stepDescription.textContent = step.desc;
+  els.stepContent.innerHTML = stepMarkup(step.id);
+  els.backBtn.disabled = currentStep === 0;
+  els.continueBtn.textContent = currentStep === STEPS.length - 1 ? "Finish" : "Continue";
+  renderProgress();
+  bindStepEvents();
+}
+
+function stepMarkup(id) {
+  const cv = currentCv();
+  if (!cv) return `<div class="empty-state"><strong>No CV selected</strong><p>Create a CV profile to continue.</p></div>`;
+  if (id === "personal") return personalMarkup(cv);
+  if (id === "profile") return profileMarkup(cv);
+  if (id === "experience") return experienceMarkup(cv);
+  if (id === "education") return educationMarkup(cv);
+  if (id === "skills") return skillsMarkup(cv);
+  if (id === "projects") return projectsMarkup(cv);
+  if (id === "certificates") return certificatesMarkup(cv);
+  if (id === "links") return linksMarkup(cv);
+  if (id === "design") return designMarkup(cv);
+  if (id === "preview") return previewStepMarkup();
+  if (id === "download") return downloadStepMarkup();
+  return "";
+}
+
+function personalMarkup(cv) {
+  return `<div class="form-section">
+    <div class="field-grid">
+      ${fieldTemplate({ label: "Full Name", path: "personal.name", value: cv.personal.name, placeholder: "Your full name" })}
+      ${fieldTemplate({ label: "Professional Title", path: "personal.title", value: cv.personal.title, placeholder: "e.g. Software Developer", optional: true })}
+      ${fieldTemplate({ label: "Email", path: "personal.email", value: cv.personal.email, type: "email", placeholder: "you@example.com" })}
+      ${fieldTemplate({ label: "Phone Number", path: "personal.phone", value: cv.personal.phone, placeholder: "+91 98765 43210", optional: true })}
+      ${fieldTemplate({ label: "Location", path: "personal.location", value: cv.personal.location, placeholder: "City, Country", optional: true, full: true })}
+      <div class="field full">
+        <label for="photoInput">Profile Photo <span class="optional-label">Optional</span></label>
+        <div class="photo-row">
+          <div class="photo-preview" id="photoPreview">${cv.personal.photo ? `<img src="${escapeAttr(cv.personal.photo)}" alt="Profile photo preview">` : "No photo"}</div>
+          <div style="flex:1;display:grid;gap:8px">
+            <input class="file-input" id="photoInput" type="file" accept="image/png,image/jpeg,image/webp" />
+            <button class="small-btn ${cv.personal.photo ? "danger" : ""}" id="removePhotoBtn" type="button">${cv.personal.photo ? "Remove Photo" : "Photo is optional"}</button>
+            <div class="hint">The browser resizes the image before storing it locally.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function profileMarkup(cv) {
+  const count = cv.profile.length;
+  return `<div class="form-section">
+    <div class="field full">
+      <label for="profileText">Professional Summary / Profile <span class="counter" id="profileCounter">${count}/1000</span></label>
+      <textarea id="profileText" data-path="profile" maxlength="1000" placeholder="Summarize your background, core strengths, and the type of work you want to do.">${escapeHtml(cv.profile)}</textarea>
+      <div class="hint" style="margin-top:5px">Keep this factual. Do not add achievements or skills you cannot support.</div>
+    </div>
+    <div class="section-note">AI improvement can be added later through a secure backend proxy. This standalone version does not send your CV data to an external AI service.</div>
+  </div>`;
+}
+
+function experienceMarkup(cv) {
+  const cards = cv.experience.map((item, i) => repeatExperienceCard(item, i)).join("");
+  return `<div class="form-section">
+    <div class="repeat-list">${cards || `<div class="empty-state"><strong>No experience added</strong><p>Add internships, jobs, freelance work, or relevant experience.</p></div>`}</div>
+    <button class="add-btn" type="button" data-add="experience">+ Add Experience</button>
+  </div>`;
+}
+
+function repeatExperienceCard(item, i) {
+  return `<div class="repeat-card" data-repeat="experience" data-index="${i}">
+    <div class="repeat-card-head">
+      <div><div class="repeat-card-title">${escapeHtml(item.jobTitle || "Experience")}</div><div class="repeat-card-meta">${escapeHtml(item.company || "Company not added")}</div></div>
+      <div class="card-actions"><button class="small-btn danger" type="button" data-action="delete" data-type="experience" data-index="${i}">Delete</button></div>
+    </div>
+    <div class="field-grid">
+      ${fieldTemplate({ label: "Job Title", path: `experience.${i}.jobTitle`, value: item.jobTitle, placeholder: "Job title" })}
+      ${fieldTemplate({ label: "Company Name", path: `experience.${i}.company`, value: item.company, placeholder: "Company" })}
+      ${fieldTemplate({ label: "Location", path: `experience.${i}.location`, value: item.location, placeholder: "City, Country", optional: true })}
+      ${fieldTemplate({ label: "Start Date", path: `experience.${i}.start`, value: item.start, placeholder: "MM/YYYY", optional: true })}
+      <div class="field">
+        <label for="experience_${i}_end">End Date <span class="optional-label">Optional</span></label>
+        <input id="experience_${i}_end" data-path="experience.${i}.end" type="text" value="${escapeAttr(item.end)}" placeholder="MM/YYYY" ${item.currently ? "disabled" : ""} />
+      </div>
+      <div class="field" style="display:flex;align-items:end">
+        <label class="checkbox-row"><input type="checkbox" data-path="experience.${i}.currently" ${item.currently ? "checked" : ""} /> Currently Working</label>
+      </div>
+      ${textareaTemplate({ label: "Description", path: `experience.${i}.description`, value: item.description, placeholder: "Briefly describe the role.", optional: true })}
+      ${textareaTemplate({ label: "Responsibilities", path: `experience.${i}.responsibilities`, value: item.responsibilities, placeholder: "One responsibility per line.", optional: true })}
+      ${textareaTemplate({ label: "Achievements", path: `experience.${i}.achievements`, value: item.achievements, placeholder: "Optional measurable achievements, one per line.", optional: true })}
+    </div>
+  </div>`;
+}
+
+function educationMarkup(cv) {
+  const cards = cv.education.map((item, i) => repeatEducationCard(item, i)).join("");
+  return `<div class="form-section">
+    <div class="repeat-list">${cards || `<div class="empty-state"><strong>No education added</strong><p>Add your qualifications and education history.</p></div>`}</div>
+    <button class="add-btn" type="button" data-add="education">+ Add Education</button>
+  </div>`;
+}
+function repeatEducationCard(item, i) {
+  return `<div class="repeat-card" data-repeat="education" data-index="${i}">
+    <div class="repeat-card-head">
+      <div><div class="repeat-card-title">${escapeHtml(item.degree || "Education")}</div><div class="repeat-card-meta">${escapeHtml(item.institution || "Institution not added")}</div></div>
+      <div class="card-actions"><button class="small-btn danger" type="button" data-action="delete" data-type="education" data-index="${i}">Delete</button></div>
+    </div>
+    <div class="field-grid">
+      ${fieldTemplate({ label: "Degree / Qualification", path: `education.${i}.degree`, value: item.degree, placeholder: "e.g. Diploma in Computer Engineering" })}
+      ${fieldTemplate({ label: "Institution", path: `education.${i}.institution`, value: item.institution, placeholder: "Institution" })}
+      ${fieldTemplate({ label: "Location", path: `education.${i}.location`, value: item.location, placeholder: "City, Country", optional: true })}
+      ${fieldTemplate({ label: "Start Year", path: `education.${i}.startYear`, value: item.startYear, type: "number", placeholder: "2023", optional: true, min: 1900, max: 2100 })}
+      <div class="field">
+        <label for="education_${i}_endYear">End Year <span class="optional-label">Optional</span></label>
+        <input id="education_${i}_endYear" data-path="education.${i}.endYear" type="number" value="${escapeAttr(item.endYear)}" placeholder="2027" min="1900" max="2100" ${item.currently ? "disabled" : ""} />
+      </div>
+      <div class="field" style="display:flex;align-items:end">
+        <label class="checkbox-row"><input type="checkbox" data-path="education.${i}.currently" ${item.currently ? "checked" : ""} /> Currently Studying</label>
+      </div>
+      ${fieldTemplate({ label: "Grade / Percentage", path: `education.${i}.grade`, value: item.grade, placeholder: "e.g. 74%", optional: true })}
+      ${textareaTemplate({ label: "Additional Information", path: `education.${i}.info`, value: item.info, placeholder: "Optional details.", optional: true, full: true })}
+    </div>
+  </div>`;
+}
+
+function skillsMarkup(cv) {
+  const cats = cv.skills.map((cat, catIndex) => skillCategoryCard(cat, catIndex)).join("");
+  return `<div class="form-section">
+    <div class="repeat-list">${cats || `<div class="empty-state"><strong>No skills added</strong><p>Create categories and add skills without assigning automatic levels.</p></div>`}</div>
+    <button class="add-btn" type="button" data-add="skillCategory">+ Add Skill Category</button>
+  </div>`;
+}
+function skillCategoryCard(cat, catIndex) {
+  return `<div class="skill-category" data-skill-category="${catIndex}">
+    <div class="skill-category-head">
+      <input data-path="skills.${catIndex}.category" value="${escapeAttr(cat.category)}" aria-label="Skill category" placeholder="Category name" style="flex:1;border:1px solid var(--border-strong);border-radius:10px;padding:8px 10px;background:#fff;font-weight:800" />
+      <div class="card-actions">
+        <button class="small-btn" type="button" data-action="moveSkillCategory" data-index="${catIndex}" data-direction="up">↑</button>
+        <button class="small-btn" type="button" data-action="moveSkillCategory" data-index="${catIndex}" data-direction="down">↓</button>
+        <button class="small-btn danger" type="button" data-action="deleteSkillCategory" data-index="${catIndex}">Delete</button>
+      </div>
+    </div>
+    <div class="skill-items">${(cat.items || []).map((skill, itemIndex) => `<div class="skill-chip">${escapeHtml(skill)} <button type="button" aria-label="Remove ${escapeAttr(skill)}" data-action="deleteSkill" data-cat="${catIndex}" data-index="${itemIndex}">×</button></div>`).join("") || '<span class="hint">No skills in this category.</span>'}</div>
+    <form class="skill-add-row" data-skill-form="${catIndex}">
+      <input name="skill" placeholder="Type a skill and press Add" autocomplete="off" />
+      <button class="small-btn" type="submit">Add</button>
+    </form>
+  </div>`;
+}
+
+function projectsMarkup(cv) {
+  const cards = cv.projects.map((item, i) => repeatProjectCard(item, i)).join("");
+  return `<div class="form-section"><div class="repeat-list">${cards || `<div class="empty-state"><strong>No projects added</strong><p>Add academic, internship, personal, or team projects.</p></div>`}</div><button class="add-btn" type="button" data-add="projects">+ Add Project</button></div>`;
+}
+function repeatProjectCard(item, i) {
+  return `<div class="repeat-card">
+    <div class="repeat-card-head"><div><div class="repeat-card-title">${escapeHtml(item.name || "Project")}</div><div class="repeat-card-meta">${escapeHtml(item.type || "Project type not added")}</div></div><div class="card-actions"><button class="small-btn danger" type="button" data-action="delete" data-type="projects" data-index="${i}">Delete</button></div></div>
+    <div class="field-grid">
+      ${fieldTemplate({ label: "Project Name", path: `projects.${i}.name`, value: item.name, placeholder: "Project name" })}
+      ${fieldTemplate({ label: "Project Type", path: `projects.${i}.type`, value: item.type, placeholder: "Mini Project, Internship Project, etc.", optional: true })}
+      ${fieldTemplate({ label: "Technologies Used", path: `projects.${i}.technologies`, value: item.technologies, placeholder: "HTML, CSS, JavaScript", optional: true })}
+      ${fieldTemplate({ label: "Project URL", path: `projects.${i}.url`, value: item.url, placeholder: "https://example.com", optional: true })}
+      ${fieldTemplate({ label: "GitHub URL", path: `projects.${i}.github`, value: item.github, placeholder: "https://github.com/...", optional: true })}
+      ${fieldTemplate({ label: "Start Date", path: `projects.${i}.start`, value: item.start, placeholder: "MM/YYYY", optional: true })}
+      ${fieldTemplate({ label: "End Date", path: `projects.${i}.end`, value: item.end, placeholder: "MM/YYYY", optional: true })}
+      <div class="field" style="display:flex;align-items:end"><label class="checkbox-row"><input type="checkbox" data-path="projects.${i}.team" ${item.team ? "checked" : ""} /> Team Project</label></div>
+      ${textareaTemplate({ label: "Project Description", path: `projects.${i}.description`, value: item.description, placeholder: "Explain what you built and what it does.", optional: true })}
+    </div>
+  </div>`;
+}
+
+function certificatesMarkup(cv) {
+  const cards = cv.certificates.map((item, i) => repeatCertificateCard(item, i)).join("");
+  return `<div class="form-section"><div class="repeat-list">${cards || `<div class="empty-state"><strong>No certificates added</strong><p>Add courses, certificates, credentials, and training.</p></div>`}</div><button class="add-btn" type="button" data-add="certificates">+ Add Certificate</button></div>`;
+}
+function repeatCertificateCard(item, i) {
+  return `<div class="repeat-card">
+    <div class="repeat-card-head"><div><div class="repeat-card-title">${escapeHtml(item.name || "Certificate")}</div><div class="repeat-card-meta">${escapeHtml(item.issuer || "Issuing organization not added")}</div></div><div class="card-actions"><button class="small-btn danger" type="button" data-action="delete" data-type="certificates" data-index="${i}">Delete</button></div></div>
+    <div class="field-grid">
+      ${fieldTemplate({ label: "Certificate Name", path: `certificates.${i}.name`, value: item.name, placeholder: "Certificate name" })}
+      ${fieldTemplate({ label: "Issuing Organization", path: `certificates.${i}.issuer`, value: item.issuer, placeholder: "Organization" })}
+      ${fieldTemplate({ label: "Issue Date", path: `certificates.${i}.date`, value: item.date, placeholder: "MM/YYYY", optional: true })}
+      ${fieldTemplate({ label: "Credential ID", path: `certificates.${i}.id`, value: item.id, placeholder: "Optional", optional: true })}
+      ${fieldTemplate({ label: "Credential URL", path: `certificates.${i}.url`, value: item.url, placeholder: "https://example.com/credential", optional: true, full: true })}
+    </div>
+  </div>`;
+}
+
+function linksMarkup(cv) {
+  return `<div class="form-section"><div class="field-grid">
+    ${fieldTemplate({ label: "LinkedIn URL", path: "links.linkedin", value: cv.links.linkedin, placeholder: "https://www.linkedin.com/in/your-name", optional: true, full: true })}
+    ${fieldTemplate({ label: "GitHub URL", path: "links.github", value: cv.links.github, placeholder: "https://github.com/your-name", optional: true, full: true })}
+    ${fieldTemplate({ label: "Portfolio URL", path: "links.portfolio", value: cv.links.portfolio, placeholder: "https://portfolio.example.com", optional: true })}
+    ${fieldTemplate({ label: "Personal Website", path: "links.website", value: cv.links.website, placeholder: "https://example.com", optional: true })}
+    ${fieldTemplate({ label: "Other Professional Link", path: "links.other", value: cv.links.other, placeholder: "https://example.com", optional: true, full: true })}
+  </div><div class="hint">Only http and https URLs are accepted. Empty fields stay hidden in the CV.</div></div>`;
+}
+
+function designMarkup(cv) {
+  const templateCards = TEMPLATE_OPTIONS.map(t => `<button type="button" class="template-card ${cv.settings.template === t.id ? "active" : ""}" data-template="${t.id}">
+    <div class="template-thumb ${t.id === "developer" ? "dev-thumb" : ""}"><div class="thumb-head"></div><div class="thumb-line"></div><div class="thumb-line short"></div>${t.id === "two-column" ? '<div class="thumb-columns"><div class="thumb-col"></div><div class="thumb-col"></div></div>' : '<div class="thumb-line"></div><div class="thumb-line short"></div><div class="thumb-line"></div>'}</div>
+    <div class="template-name">${escapeHtml(t.name)}</div><div class="template-desc">${escapeHtml(t.desc)}</div>
+  </button>`).join("");
+  const order = cv.settings.sectionOrder.filter(id => ALL_SECTION_IDS.includes(id));
+  const orderItems = order.map((id, i) => `<div class="order-item" draggable="true" data-section-id="${id}"><span class="order-grip">☷</span><span>${escapeHtml(SECTION_LABELS[id])}</span><small>${hasSectionData(id, cv) ? "Used" : "Empty"}</small><label class="checkbox-row"><input type="checkbox" data-section-toggle="${id}" ${isSectionEnabled(id, cv) ? "checked" : ""} aria-label="Show ${escapeAttr(SECTION_LABELS[id])} section" /></label><button type="button" data-action="moveSection" data-index="${i}" data-direction="up" aria-label="Move section up">↑</button><button type="button" data-action="moveSection" data-index="${i}" data-direction="down" aria-label="Move section down">↓</button></div>`).join("");
+  return `<div class="form-section">
+    <div><h3>Template</h3><div class="design-grid">${templateCards}</div></div>
+    <div class="form-divider"></div>
+    <div class="field-grid">
+      <div class="field"><label for="fontSelect">Font</label><select id="fontSelect" data-path="settings.font">${FONT_OPTIONS.map(font => `<option value="${escapeAttr(font)}" ${cv.settings.font === font ? "selected" : ""}>${escapeHtml(font)}</option>`).join("")}</select></div>
+      <div class="field"><label>Accent Color</label><div class="color-field"><input type="color" id="accentColor" data-path="settings.accentColor" value="${escapeAttr(cv.settings.accentColor)}" /><input data-path="settings.accentColor" value="${escapeAttr(cv.settings.accentColor)}" aria-label="Accent color hex value" /></div></div>
+      <div class="field"><label for="textSizeRange">Text Size <span class="counter" id="textSizeCounter">${Number(cv.settings.textSize).toFixed(1)} px</span></label><div class="range-row"><input id="textSizeRange" data-path="settings.textSize" type="range" min="9" max="12" step="0.1" value="${escapeAttr(cv.settings.textSize)}" /><input data-path="settings.textSize" type="number" min="9" max="12" step="0.1" value="${escapeAttr(cv.settings.textSize)}" aria-label="Text size" /></div></div>
+      <div class="field"><label for="spacingRange">Spacing <span class="counter" id="spacingCounter">${Number(cv.settings.spacing).toFixed(1)}×</span></label><div class="range-row"><input id="spacingRange" data-path="settings.spacing" type="range" min="0.75" max="1.4" step="0.05" value="${escapeAttr(cv.settings.spacing)}" /><input data-path="settings.spacing" type="number" min="0.75" max="1.4" step="0.05" value="${escapeAttr(cv.settings.spacing)}" aria-label="Spacing" /></div></div>
+      <div class="field full"><label for="sectionStyleSelect">Section Style</label><select id="sectionStyleSelect" data-path="settings.sectionStyle"><option value="bar" ${cv.settings.sectionStyle === "bar" ? "selected" : ""}>Rule and label</option><option value="line" ${cv.settings.sectionStyle === "line" ? "selected" : ""}>Underline</option><option value="accent" ${cv.settings.sectionStyle === "accent" ? "selected" : ""}>Accent label</option><option value="box" ${cv.settings.sectionStyle === "box" ? "selected" : ""}>Subtle box</option></select></div>
+    </div>
+    <div class="form-divider"></div>
+    <div><h3>Optional Sections</h3><div class="hint" style="margin-bottom:10px">Use these sections only when they add useful information. Empty sections never appear in the CV.</div>${optionalSectionEditors(cv)}</div>
+    <div class="form-divider"></div>
+    <div><h3>Section Order</h3><div class="hint" style="margin-bottom:10px">Drag sections to reorder them. The CV preview follows this order.</div><div class="order-list" id="sectionOrderList">${orderItems}</div></div>
+  </div>`;
+}
+
+function optionalSectionEditors(cv) {
+  return `<div class="form-section">
+    ${arrayEditor("Achievements", "achievements", cv.achievements, "achievement", "Add achievement")}
+    ${arrayEditor("Languages", "languages", cv.languages, "language", "e.g. English, Malayalam")}
+    ${arrayEditor("Interests", "interests", cv.interests, "interest", "e.g. Open source")}
+    ${arrayEditor("Volunteer Experience", "volunteer", cv.volunteer, "volunteer", "Role or activity")}
+    ${referencesEditor(cv.references)}
+  </div>`;
+}
+
+function arrayEditor(title, path, values, type, placeholder) {
+  return `<div class="field full"><label>${escapeHtml(title)} <span class="optional-label">Optional</span></label><div class="repeat-list" data-array-editor="${path}">${values.map((value, i) => `<div style="display:grid;grid-template-columns:1fr auto;gap:8px"><input data-path="${path}.${i}" value="${escapeAttr(value)}" placeholder="${escapeAttr(placeholder)}" /><button class="small-btn danger" type="button" data-action="deleteArrayValue" data-path="${path}" data-index="${i}">Delete</button></div>`).join("")}</div><button class="add-btn" style="margin-top:8px" type="button" data-action="addArrayValue" data-path="${path}" data-type="${type}">+ Add ${escapeHtml(title.replace(/s$/, ""))}</button></div>`;
+}
+
+function referencesEditor(values) {
+  return `<div class="field full"><label>References <span class="optional-label">Optional</span></label><div class="repeat-list">${values.map((r, i) => `<div class="repeat-card"><div class="repeat-card-head"><div class="repeat-card-title">${escapeHtml(r.name || "Reference")}</div><button class="small-btn danger" type="button" data-action="delete" data-type="references" data-index="${i}">Delete</button></div><div class="field-grid">${fieldTemplate({label:"Name",path:`references.${i}.name`,value:r.name,placeholder:"Reference name"})}${fieldTemplate({label:"Role / Relationship",path:`references.${i}.role`,value:r.role,placeholder:"Role"})}${fieldTemplate({label:"Company",path:`references.${i}.company`,value:r.company,placeholder:"Company",optional:true})}${fieldTemplate({label:"Email",path:`references.${i}.email`,value:r.email,type:"email",placeholder:"reference@example.com",optional:true})}${fieldTemplate({label:"Phone",path:`references.${i}.phone`,value:r.phone,placeholder:"Phone",optional:true})}</div></div>`).join("") || '<div class="empty-state"><strong>No references added</strong><p>References remain hidden unless you add them.</p></div>'}</div><button class="add-btn" type="button" data-add="references">+ Add Reference</button></div>`;
+}
+
+function previewStepMarkup() {
+  return `<div class="form-section"><div class="section-note">The live A4 document is shown beside the editor on desktop. On a smaller screen, use the Preview CV button above the document.</div><button class="btn btn-primary btn-wide" type="button" id="focusPreviewBtn">Open Preview</button><button class="btn btn-secondary btn-wide" type="button" id="goDownloadBtn">Go to Download</button></div>`;
+}
+
+function downloadStepMarkup() {
+  return `<div class="form-section"><div class="section-note">PDF export uses the browser print engine. This keeps the CV as real HTML text, so text stays selectable and valid links can remain clickable in the saved PDF.</div><button class="btn btn-primary btn-wide" type="button" id="downloadPdfBtn">Download CV as PDF</button><button class="btn btn-secondary btn-wide" type="button" id="downloadPngBtn">Download CV as PNG</button><div class="hint">PNG export uses a 3× render scale. It requires internet access for the optional html2canvas library.</div><div class="section-note">Before printing, check the document in the live preview. Print CSS removes editor controls, navigation, buttons, scrollbars, and other UI.</div></div>`;
+}
+
+function bindStepEvents() {
+  $$("[data-path]", els.stepContent).forEach(el => {
+    el.addEventListener("input", handleFieldChange);
+    el.addEventListener("change", handleFieldChange);
+  });
+  const profile = $("#profileText");
+  if (profile) profile.addEventListener("input", () => {
+    const counter = $("#profileCounter");
+    if (counter) counter.textContent = `${profile.value.length}/1000`;
+  });
+  const photoInput = $("#photoInput");
+  if (photoInput) photoInput.addEventListener("change", handlePhotoUpload);
+  const removePhotoBtn = $("#removePhotoBtn");
+  if (removePhotoBtn) removePhotoBtn.addEventListener("click", () => {
+    currentCv().personal.photo = "";
+    scheduleSave();
+    renderStep();
+    renderPreview();
+  });
+  $$('[data-action="delete"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+    const cv = currentCv();
+    const type = btn.dataset.type;
+    const index = Number(btn.dataset.index);
+    if (!cv || !Array.isArray(cv[type])) return;
+    cv[type].splice(index, 1);
+    scheduleSave();
+    renderStep();
+    renderPreview();
+  }));
+  $$('[data-action="moveSkillCategory"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => moveArrayItem("skills", Number(btn.dataset.index), btn.dataset.direction)));
+  $$('[data-action="deleteSkillCategory"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+    currentCv().skills.splice(Number(btn.dataset.index), 1);
+    scheduleSave(); renderStep(); renderPreview();
+  }));
+  $$('[data-action="deleteSkill"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+    const cv = currentCv();
+    cv.skills[Number(btn.dataset.cat)].items.splice(Number(btn.dataset.index), 1);
+    scheduleSave(); renderStep(); renderPreview();
+  }));
+  $$('[data-skill-form]', els.stepContent).forEach(form => form.addEventListener("submit", e => {
+    e.preventDefault();
+    const input = $("input[name=skill]", form);
+    const value = input.value.trim();
+    if (!value) return;
+    const cat = currentCv().skills[Number(form.dataset.skillForm)];
+    cat.items = Array.isArray(cat.items) ? cat.items : [];
+    cat.items.push(value);
+    input.value = "";
+    scheduleSave(); renderStep(); renderPreview();
+  }));
+  $$('[data-add]', els.stepContent).forEach(btn => btn.addEventListener("click", () => addRepeat(btn.dataset.add)));
+  $$('[data-template]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+    currentCv().settings.template = btn.dataset.template;
+    scheduleSave(); renderStep(); renderPreview();
+  }));
+  $$('[data-action="addArrayValue"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+    const cv = currentCv();
+    if (!Array.isArray(cv[btn.dataset.path])) cv[btn.dataset.path] = [];
+    cv[btn.dataset.path].push("");
+    scheduleSave(); renderStep(); renderPreview();
+  }));
+  $$('[data-action="deleteArrayValue"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+    const cv = currentCv();
+    cv[btn.dataset.path].splice(Number(btn.dataset.index), 1);
+    scheduleSave(); renderStep(); renderPreview();
+  }));
+  $$('[data-action="moveSection"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => moveSection(Number(btn.dataset.index), btn.dataset.direction)));
+  $$('[data-section-toggle]', els.stepContent).forEach(toggle => toggle.addEventListener("change", () => {
+    const cv = currentCv();
+    cv.settings.enabledSections[toggle.dataset.sectionToggle] = toggle.checked;
+    scheduleSave(); renderStep(); renderPreview();
+  }));
+  const orderList = $("#sectionOrderList");
+  if (orderList) {
+    $$(".order-item", orderList).forEach(item => {
+      item.addEventListener("dragstart", () => { dragSectionId = item.dataset.sectionId; });
+      item.addEventListener("dragover", e => e.preventDefault());
+      item.addEventListener("drop", e => {
+        e.preventDefault();
+        const target = item.dataset.sectionId;
+        if (!dragSectionId || dragSectionId === target) return;
+        const arr = currentCv().settings.sectionOrder;
+        const from = arr.indexOf(dragSectionId); const to = arr.indexOf(target);
+        if (from < 0 || to < 0) return;
+        arr.splice(from, 1); arr.splice(to, 0, dragSectionId);
+        dragSectionId = null; scheduleSave(); renderStep(); renderPreview();
+      });
+    });
+  }
+  const focusPreviewBtn = $("#focusPreviewBtn");
+  if (focusPreviewBtn) focusPreviewBtn.addEventListener("click", openMobilePreview);
+  const goDownloadBtn = $("#goDownloadBtn");
+  if (goDownloadBtn) goDownloadBtn.addEventListener("click", () => goToStep(10));
+  const downloadPdfBtn = $("#downloadPdfBtn");
+  if (downloadPdfBtn) downloadPdfBtn.addEventListener("click", printCv);
+  const downloadPngBtn = $("#downloadPngBtn");
+  if (downloadPngBtn) downloadPngBtn.addEventListener("click", downloadPng);
+  bindColorSync();
+  updateDesignCounters();
+}
+
+function bindColorSync() {
+  const color = $("#accentColor");
+  const hex = $("input[data-path='settings.accentColor']", els.stepContent);
+  if (color && hex) {
+    color.addEventListener("input", () => { hex.value = color.value; });
+    hex.addEventListener("input", () => {
+      if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) color.value = hex.value;
+    });
+  }
+}
+
+function updateDesignCounters() {
+  const cv = currentCv();
+  const size = $("#textSizeCounter");
+  const spacing = $("#spacingCounter");
+  if (size) size.textContent = `${Number(cv.settings.textSize).toFixed(1)} px`;
+  if (spacing) spacing.textContent = `${Number(cv.settings.spacing).toFixed(2)}×`;
+}
+
+function handleFieldChange(event) {
+  const cv = currentCv();
+  if (!cv) return;
+  const el = event.target;
+  const path = el.dataset.path;
+  if (!path) return;
+  let value;
+  if (el.type === "checkbox") value = el.checked;
+  else if (el.type === "number" || el.type === "range") value = Number(el.value);
+  else value = el.value;
+  setByPath(cv, path, value);
+  if (path.includes(".currently")) renderStep();
+  if (path === "personal.email") validateEmailField(el);
+  if (path === "personal.phone") validatePhoneField(el);
+  if (path.endsWith("url") || path.endsWith("github") || path.includes("links.")) validateUrlField(el);
+  if (path === "profile") {
+    const counter = $("#profileCounter"); if (counter) counter.textContent = `${String(el.value).length}/1000`;
+  }
+  updateDesignCounters();
+  scheduleSave();
+  renderPreview();
+}
+
+function validateEmailField(el) {
+  const wrap = el.closest(".field"); const err = $(".error-text", wrap);
+  const valid = validEmail(el.value);
+  wrap.classList.toggle("invalid", !valid);
+  err.classList.toggle("hidden", valid);
+  err.textContent = valid ? "" : "Please enter a valid email address.";
+}
+function validatePhoneField(el) {
+  const wrap = el.closest(".field"); const err = $(".error-text", wrap);
+  const valid = validPhone(el.value);
+  wrap.classList.toggle("invalid", !valid);
+  err.classList.toggle("hidden", valid);
+  err.textContent = valid ? "" : "Please enter a valid phone number.";
+}
+function validateUrlField(el) {
+  const wrap = el.closest(".field"); const err = $(".error-text", wrap);
+  const raw = el.value.trim(); const valid = !raw || !!safeUrl(raw);
+  wrap.classList.toggle("invalid", !valid);
+  err.classList.toggle("hidden", valid);
+  err.textContent = valid ? "" : "Please enter a valid http or https URL.";
+}
+
+async function handlePhotoUpload(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (!/^image\/(png|jpe?g|webp)$/i.test(file.type)) { showToast("Use a PNG, JPG, or WebP image."); return; }
+  try {
+    const dataUrl = await resizeImage(file, 600, 760, .86);
+    currentCv().personal.photo = dataUrl;
+    scheduleSave();
+    renderStep();
+    renderPreview();
+  } catch {
+    showToast("The photo could not be processed.");
+  }
+}
+
+function resizeImage(file, maxW, maxH, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const ratio = Math.min(maxW / img.width, maxH / img.height, 1);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * ratio));
+        canvas.height = Math.max(1, Math.round(img.height * ratio));
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function addRepeat(type) {
+  const cv = currentCv();
+  const map = {
+    experience: { jobTitle:"", company:"", location:"", start:"", end:"", currently:false, description:"", responsibilities:"", achievements:"" },
+    education: { degree:"", institution:"", location:"", startYear:"", endYear:"", currently:false, grade:"", info:"" },
+    projects: { name:"", type:"", technologies:"", description:"", url:"", github:"", start:"", end:"", team:false },
+    certificates: { name:"", issuer:"", date:"", id:"", url:"" },
+    references: { name:"", role:"", company:"", email:"", phone:"" },
+    skillCategory: { category:"", items:[] }
+  };
+  if (!map[type]) return;
+  if (!Array.isArray(cv[type === "skillCategory" ? "skills" : type])) cv[type === "skillCategory" ? "skills" : type] = [];
+  cv[type === "skillCategory" ? "skills" : type].push(map[type]);
+  scheduleSave(); renderStep(); renderPreview();
+}
+
+function moveArrayItem(path, index, direction) {
+  const arr = currentCv()[path];
+  const to = direction === "up" ? index - 1 : index + 1;
+  if (!Array.isArray(arr) || to < 0 || to >= arr.length) return;
+  [arr[index], arr[to]] = [arr[to], arr[index]];
+  scheduleSave(); renderStep(); renderPreview();
+}
+
+function moveSection(index, direction) {
+  const arr = currentCv().settings.sectionOrder;
+  const to = direction === "up" ? index - 1 : index + 1;
+  if (to < 0 || to >= arr.length) return;
+  [arr[index], arr[to]] = [arr[to], arr[index]];
+  scheduleSave(); renderStep(); renderPreview();
+}
+
+function isSectionEnabled(id, cv) {
+  return cv?.settings?.enabledSections?.[id] !== false;
+}
+
+function hasSectionData(id, cv) {
+  if (!isSectionEnabled(id, cv)) return false;
+  if (id === "profile") return !!cv.profile.trim();
+  if (id === "links") return Object.values(cv.links).some(v => String(v || "").trim());
+  const values = cv[id];
+  return Array.isArray(values) && values.some(item => typeof item === "string" ? item.trim() : Object.values(item || {}).some(v => typeof v === "boolean" ? v : String(v || "").trim()));
+}
+
+function renderProfileSelect() {
+  els.profileSelect.innerHTML = profiles.map(p => `<option value="${escapeAttr(p.id)}" ${p.id === activeId ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("");
+}
+
+function renderProfileList() {
+  els.profileList.innerHTML = profiles.length ? profiles.map(p => `<div class="profile-row ${p.id === activeId ? "active" : ""}">
+    <div><div class="profile-name">${escapeHtml(p.name)}</div><div class="profile-meta">Updated ${formatDate(p.updatedAt)}</div></div>
+    <div class="profile-actions"><button class="small-btn" type="button" data-profile-action="open" data-id="${p.id}">Edit</button><button class="small-btn" type="button" data-profile-action="rename" data-id="${p.id}">Rename</button><button class="small-btn" type="button" data-profile-action="duplicate" data-id="${p.id}">Duplicate</button><button class="small-btn danger" type="button" data-profile-action="delete" data-id="${p.id}">Delete</button></div>
+  </div>`).join("") : `<div class="empty-state"><strong>No CV profiles</strong><p>Create your first CV.</p></div>`;
+  $$("[data-profile-action]", els.profileList).forEach(btn => btn.addEventListener("click", () => handleProfileAction(btn.dataset.profileAction, btn.dataset.id)));
+}
+
+function formatDate(timestamp) {
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(timestamp));
+}
+
+function handleProfileAction(action, id) {
+  const index = profiles.findIndex(p => p.id === id);
+  if (index < 0) return;
+  const profile = profiles[index];
+  if (action === "open") { setActive(id); closeProfileModal(); return; }
+  if (action === "rename") {
+    const next = prompt("New CV name", profile.name);
+    if (next && next.trim()) { profile.name = next.trim(); profile.updatedAt = Date.now(); persistProfiles(); renderProfileSelect(); renderProfileList(); }
+    return;
+  }
+  if (action === "duplicate") {
+    const copy = normalizeCv(JSON.parse(JSON.stringify(profile)));
+    copy.id = uid(); copy.name = `${profile.name} Copy`; copy.updatedAt = Date.now();
+    profiles.push(copy); setActive(copy.id); persistProfiles(); renderProfileList(); showToast("CV duplicated."); return;
+  }
+  if (action === "delete") {
+    if (profiles.length === 1) { showToast("Keep at least one CV profile."); return; }
+    if (!confirm(`Delete “${profile.name}”?`)) return;
+    profiles.splice(index, 1);
+    if (activeId === id) activeId = profiles[0].id;
+    persistProfiles(); setActive(activeId); renderProfileList(); showToast("CV deleted.");
+  }
+}
+
+function createNewProfile() {
+  const name = prompt("CV name", `New CV ${profiles.length + 1}`);
+  if (!name || !name.trim()) return;
+  createProfile(name.trim());
+  closeProfileModal();
+  showToast("New CV created.");
+}
+
+function openProfileModal() { renderProfileList(); els.profileModalBackdrop.classList.remove("hidden"); }
+function closeProfileModal() { els.profileModalBackdrop.classList.add("hidden"); }
+function openWelcome() { els.welcomeBackdrop.classList.remove("hidden"); }
+function closeWelcome() { els.welcomeBackdrop.classList.add("hidden"); }
+
+function startFromScratch() {
+  const cv = currentCv();
+  if (cv && hasAnyData(cv) && !confirm("Clear the current CV and start from scratch?")) return;
+  const fresh = blankCv(cv?.name || "Untitled CV");
+  if (cv) { fresh.id = cv.id; fresh.name = cv.name; const idx = profiles.findIndex(p => p.id === cv.id); profiles[idx] = fresh; }
+  else createProfile();
+  currentStep = 0;
+  persistProfiles(); renderStep(); renderPreview(); closeWelcome();
+  showToast("Started a blank CV.");
+}
+
+function hasAnyData(cv) {
+  return !!(cv.personal.name || cv.personal.title || cv.personal.email || cv.personal.phone || cv.personal.location || cv.personal.photo || cv.profile || cv.experience.length || cv.education.length || cv.skills.length || cv.projects.length || cv.certificates.length || Object.values(cv.links).some(Boolean) || EXTRA_SECTION_IDS.some(id => Array.isArray(cv[id]) && cv[id].length));
+}
+
+function loadExample() {
+  const example = blankCv("Example CV, Muhammed Raishan K S");
+  example.personal = {
+    name: "Muhammed Raishan K S",
+    title: "MERN Stack Developer",
+    email: "muhammedraishan12@gmail.com",
+    phone: "7025442012",
+    location: "Kanjirankal (h), Muppanadham P O, Aluva",
+    photo: ""
+  };
+  example.experience = [
+    { jobTitle: "MERN Stack Developer", company: "Synnefo Solutions", location: "Ernakulam", start: "11/2024", end: "", currently: true, description: "Pursuing internship in MERN Stack as part of academic curriculum.\n6 months internship.", responsibilities: "", achievements: "" },
+    { jobTitle: "Flutter Developer", company: "Zoople Technologies", location: "Ernakulam", start: "04/2024", end: "05/2024", currently: false, description: "Learn the basics of Flutter.\nLearn about Dart Programming Languages.\nLearn about Flutter development Environments.", responsibilities: "", achievements: "" }
+  ];
+  example.education = [
+    { degree: "Diploma in Computer Engineering", institution: "Kuttukaran Polytechnic College", location: "N. Paravoor, India", startYear: "2023", endYear: "", currently: true, grade: "", info: "" },
+    { degree: "Plus Two", institution: "VCHSS, Puthenvelikara", location: "N. Paravoor", startYear: "2019", endYear: "2021", currently: false, grade: "50%", info: "Passed by obtaining 50%." },
+    { degree: "SSLC", institution: "Little Flower HS", location: "Panayikulam, India", startYear: "2018", endYear: "", currently: false, grade: "74%", info: "Passed by obtaining 74%." }
+  ];
+  example.skills = [
+    { category: "Programming Languages", items: ["C", "Python", "JavaScript"] },
+    { category: "Web Technologies", items: ["HTML", "CSS"] },
+    { category: "Backend", items: ["Node.js", "Express.js"] },
+    { category: "Database", items: ["MongoDB", "MySQL"] }
+  ];
+  example.projects = [
+    { name: "Labour Service", type: "Mini Project", technologies: "HTML, PHP", description: "Simple website for Labour Service.\nUsers can choose workers they need for their jobs.", url: "", github: "", start: "", end: "", team: true },
+    { name: "Instagram Clone", type: "Internship Project", technologies: "CSS, HTML, JavaScript, MongoDB, Express.js", description: "Group project clone application.", url: "", github: "", start: "", end: "", team: true }
+  ];
+  example.certificates = [
+    { name: "IoT Fundamental Course", issuer: "Udemy", date: "", id: "", url: "" },
+    { name: "Web Development Masterclass", issuer: "Udemy", date: "", id: "", url: "" },
+    { name: "Build Complete 2023 CMS Blog in PHP MySQL and PDO", issuer: "Udemy", date: "", id: "", url: "" }
+  ];
+  example.profile = "Computer Engineering student with internship experience in MERN Stack and Flutter development. Interested in building practical web applications and learning modern development tools.";
+  const cv = currentCv();
+  if (cv) { example.id = cv.id; example.name = cv.name; profiles[profiles.findIndex(p => p.id === cv.id)] = example; }
+  else { profiles.push(example); activeId = example.id; }
+  currentStep = 0;
+  persistProfiles(); renderProfileSelect(); renderStep(); renderPreview(); closeWelcome();
+  showToast("Example CV loaded. You can edit every field.");
+}
+
+function goToStep(index) {
+  const target = Math.max(0, Math.min(STEPS.length - 1, index));
+  currentStep = target;
+  renderStep();
+  els.stepContent.classList.remove("step-transition");
+  void els.stepContent.offsetWidth;
+  els.stepContent.classList.add("step-transition");
+  if (target === 9) openMobilePreview();
+  else closeMobilePreview();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function openMobilePreview() {
+  const panel = $(".preview-panel");
+  panel.classList.add("mobile-open");
+  setTimeout(() => $("#cvCanvas")?.scrollIntoView({ behavior: "smooth", block: "start" }), 40);
+}
+function closeMobilePreview() { $(".preview-panel")?.classList.remove("mobile-open"); }
+
+function validateCurrentStep() {
+  const cv = currentCv();
+  if (!cv) return false;
+  let ok = true;
+  if (currentStep === 0) {
+    if (!cv.personal.name.trim()) { showToast("Please enter your full name."); ok = false; }
+    const emailEl = $("input[data-path='personal.email']", els.stepContent); if (emailEl) { validateEmailField(emailEl); ok = ok && validEmail(emailEl.value); }
+    const phoneEl = $("input[data-path='personal.phone']", els.stepContent); if (phoneEl) { validatePhoneField(phoneEl); ok = ok && validPhone(phoneEl.value); }
+  }
+  if (currentStep === 7) {
+    $("input[data-path]", els.stepContent).forEach(el => {
+      if (el.dataset.path.includes("links.") || el.dataset.path.endsWith("url") || el.dataset.path.endsWith("github")) { validateUrlField(el); if (!el.closest(".field")?.classList.contains("invalid")) return; ok = false; }
+    });
+  }
+  return ok;
+}
+
+function printCv() {
+  if (!currentCv()) return;
+  currentStep = 9;
+  renderStep();
+  renderPreview();
+  setTimeout(() => window.print(), 80);
+}
+
+async function loadHtml2Canvas() {
+  if (window.html2canvas) return window.html2canvas;
+  await new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+  return window.html2canvas;
+}
+
+async function downloadPng() {
+  const fn = $("#downloadPngBtn");
+  if (fn) { fn.disabled = true; fn.textContent = "Rendering PNG…"; }
+  try {
+    const html2canvas = await loadHtml2Canvas();
+    const canvas = await html2canvas($("#cvCanvas .cv-page"), { scale: 3, useCORS: true, backgroundColor: "#ffffff", logging: false });
+    const link = document.createElement("a");
+    link.download = `${safeFileName(currentCv().name)}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+    showToast("PNG export created.");
+  } catch {
+    showToast("PNG export needs internet access for the optional rendering library.");
+  } finally {
+    if (fn) { fn.disabled = false; fn.textContent = "Download CV as PNG"; }
+  }
+}
+
+function safeFileName(name) {
+  return (name || "CV").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "CV";
+}
+
+function renderPreview() {
+  const cv = currentCv();
+  if (!cv) { els.cvCanvas.innerHTML = ""; return; }
+  const page = buildCvPage(cv);
+  els.cvCanvas.replaceChildren(page);
+}
+
+function buildCvPage(cv) {
+  const page = document.createElement("div");
+  page.className = `cv-page template-${cv.settings.template} section-style-${cv.settings.sectionStyle || "bar"}`;
+  page.style.setProperty("--cv-accent", cv.settings.accentColor || "#2563eb");
+  page.style.setProperty("--cv-size", `${Number(cv.settings.textSize || 10.4)}px`);
+  page.style.setProperty("--cv-space", String(Number(cv.settings.spacing || 1)));
+  page.style.fontFamily = `${JSON.stringify(cv.settings.font || "Inter").replaceAll('"', "")}, Arial, sans-serif`;
+
+  const header = document.createElement("header");
+  header.className = "cv-header";
+  const inner = document.createElement("div");
+  inner.className = "header-inner";
+  const identity = document.createElement("div");
+  const name = document.createElement("h2"); name.className = "cv-name"; name.textContent = cv.personal.name || "Your Name";
+  const title = document.createElement("div"); title.className = "cv-title"; if (cv.personal.title) title.textContent = cv.personal.title; else title.remove();
+  const contact = document.createElement("div"); contact.className = "cv-contact";
+  addContact(contact, cv.personal.email, cv.personal.email ? `mailto:${cv.personal.email}` : "", "Email");
+  addContact(contact, cv.personal.phone, cv.personal.phone ? `tel:${cv.personal.phone.replace(/[^+\d]/g, "")}` : "", "Phone");
+  addContact(contact, cv.personal.location, "", "Location");
+  addContact(contact, safeUrl(cv.links.linkedin), safeUrl(cv.links.linkedin), "LinkedIn");
+  addContact(contact, safeUrl(cv.links.github), safeUrl(cv.links.github), "GitHub");
+  if (cv.links.portfolio) addContact(contact, safeUrl(cv.links.portfolio), safeUrl(cv.links.portfolio), "Portfolio");
+  if (cv.links.website) addContact(contact, safeUrl(cv.links.website), safeUrl(cv.links.website), "Website");
+  if (cv.links.other) addContact(contact, safeUrl(cv.links.other), safeUrl(cv.links.other), "Link");
+  identity.append(name, title || document.createTextNode(""), contact);
+  inner.appendChild(identity);
+  if (cv.personal.photo) {
+    const img = document.createElement("img"); img.className = "cv-photo"; img.src = cv.personal.photo; img.alt = "";
+    inner.appendChild(img);
+  }
+  header.appendChild(inner);
+  page.appendChild(header);
+
+  if (cv.settings.template === "two-column") {
+    const sidebar = document.createElement("aside"); sidebar.className = "cv-sidebar";
+    const main = document.createElement("main"); main.className = "cv-main";
+    const all = cv.settings.sectionOrder.filter(id => ALL_SECTION_IDS.includes(id) && hasSectionData(id, cv));
+    const sidebarIds = all.filter(id => ["skills", "education", "links", "languages", "interests"].includes(id));
+    const mainIds = all.filter(id => !sidebarIds.includes(id));
+    sidebarIds.forEach(id => renderSectionById(sidebar, id, cv));
+    mainIds.forEach(id => renderSectionById(main, id, cv));
+    page.append(sidebar, main);
+  } else {
+    const main = document.createElement("main"); main.className = "cv-main";
+    cv.settings.sectionOrder.forEach(id => {
+      if (ALL_SECTION_IDS.includes(id) && hasSectionData(id, cv)) renderSectionById(main, id, cv);
+    });
+    page.appendChild(main);
+  }
+  return page;
+}
+
+function addContact(container, text, href = "", label = "") {
+  if (!text) return;
+  const node = href ? document.createElement("a") : document.createElement("span");
+  if (href) { node.href = href; node.target = "_blank"; node.rel = "noopener noreferrer"; }
+  const compactText = href && /^https?:\/\//i.test(text) ? compactUrl(text) : text;
+  node.textContent = label ? `${label}: ${compactText}` : compactText;
+  container.appendChild(node);
+}
+function compactUrl(url) {
+  try { const u = new URL(url); return u.hostname.replace(/^www\./, "") + (u.pathname !== "/" ? u.pathname : ""); } catch { return url; }
+}
+
+function makeSection(title) {
+  const section = document.createElement("section");
+  section.className = "cv-section";
+  const heading = document.createElement("h3"); heading.className = "section-heading";
+  const label = document.createElement("span"); label.textContent = title;
+  const rule = document.createElement("span"); rule.className = "rule";
+  heading.append(label, rule);
+  section.appendChild(heading);
+  const content = document.createElement("div"); content.className = "section-content";
+  section.appendChild(content);
+  return { section, content };
+}
+
+function renderSectionById(parent, id, cv) {  if (id === "profile") return renderProfileSection(parent, cv);
+  if (id === "experience") return renderExperienceSection(parent, cv);
+  if (id === "education") return renderEducationSection(parent, cv);
+  if (id === "skills") return renderSkillsSection(parent, cv);
+  if (id === "projects") return renderProjectsSection(parent, cv);
+  if (id === "certificates") return renderCertificatesSection(parent, cv);
+  if (id === "links") return renderLinksSection(parent, cv);
+  if (id === "achievements") return renderSimpleArraySection(parent, cv, "achievements", "Achievements");
+  if (id === "languages") return renderSimpleArraySection(parent, cv, "languages", "Languages");
+  if (id === "interests") return renderSimpleArraySection(parent, cv, "interests", "Interests");
+  if (id === "volunteer") return renderSimpleArraySection(parent, cv, "volunteer", "Volunteer Experience");
+  if (id === "references") return renderReferencesSection(parent, cv);
+}
+
+function renderProfileSection(parent, cv) {
+  if (!cv.profile.trim()) return;
+  const { section, content } = makeSection("Profile");
+  const text = document.createElement("div"); text.className = "profile-text"; text.textContent = cv.profile;
+  content.appendChild(text); parent.appendChild(section);
+}
+function renderExperienceSection(parent, cv) {
+  const list = cv.experience.filter(e => Object.values(e).some(v => typeof v === "boolean" ? v : String(v || "").trim()));
+  if (!list.length) return;
+  const { section, content } = makeSection("Experience");
+  list.forEach(item => {
+    const entry = document.createElement("article"); entry.className = "entry";
+    const head = document.createElement("div"); head.className = "entry-head";
+    const left = document.createElement("div");
+    const t = document.createElement("div"); t.className = "entry-title"; t.textContent = item.jobTitle || "Experience";
+    const s = document.createElement("div"); s.className = "entry-sub"; s.textContent = [item.company, item.location].filter(Boolean).join(" · ");
+    left.append(t, s);
+    const date = document.createElement("div"); date.className = "entry-dates"; date.textContent = formatRange(item.start, item.currently ? "Present" : item.end);
+    head.append(left, date); entry.appendChild(head);
+    if (item.description) { const d = document.createElement("div"); d.className = "entry-description"; d.textContent = item.description; entry.appendChild(d); }
+    addBullets(entry, item.responsibilities);
+    addBullets(entry, item.achievements, "Achievements");
+    content.appendChild(entry);
+  });
+  parent.appendChild(section);
+}
+function renderEducationSection(parent, cv) {
+  const list = cv.education.filter(e => Object.values(e).some(v => typeof v === "boolean" ? v : String(v || "").trim()));
+  if (!list.length) return;
+  const { section, content } = makeSection("Education");
+  list.forEach(item => {
+    const entry = document.createElement("article"); entry.className = "entry";
+    const head = document.createElement("div"); head.className = "entry-head";
+    const left = document.createElement("div");
+    const t = document.createElement("div"); t.className = "entry-title"; t.textContent = item.degree || "Qualification";
+    const s = document.createElement("div"); s.className = "entry-sub"; s.textContent = [item.institution, item.location].filter(Boolean).join(" · ");
+    left.append(t, s); const date = document.createElement("div"); date.className = "entry-dates"; date.textContent = formatYearRange(item.startYear, item.currently ? "Present" : item.endYear);
+    head.append(left, date); entry.append(head);
+    if (item.grade || item.info) { const d = document.createElement("div"); d.className = "entry-description"; d.textContent = [item.grade, item.info].filter(Boolean).join(" · "); entry.appendChild(d); }
+    content.appendChild(entry);
+  });
+  parent.appendChild(section);
+}
+function renderSkillsSection(parent, cv) {
+  const cats = cv.skills.filter(c => (c.category || "").trim() || (c.items || []).length);
+  if (!cats.length) return;
+  const { section, content } = makeSection("Skills");
+  const grid = document.createElement("div"); grid.className = "skills-grid";
+  cats.forEach(cat => {
+    const row = document.createElement("div"); row.className = "skill-row";
+    const strong = document.createElement("strong"); strong.textContent = cat.category || "Skills";
+    const text = document.createElement("span"); text.textContent = (cat.items || []).filter(Boolean).join(", ");
+    row.append(strong, document.createTextNode(": "), text); grid.appendChild(row);
+  });
+  content.appendChild(grid); parent.appendChild(section);
+}
+function renderProjectsSection(parent, cv) {
+  const list = cv.projects.filter(p => Object.values(p).some(v => typeof v === "boolean" ? v : String(v || "").trim()));
+  if (!list.length) return;
+  const { section, content } = makeSection("Projects");
+  list.forEach(item => {
+    const entry = document.createElement("article"); entry.className = "entry";
+    const head = document.createElement("div"); head.className = "entry-head";
+    const left = document.createElement("div"); const t = document.createElement("div"); t.className = "entry-title"; t.textContent = item.name || "Project";
+    const s = document.createElement("div"); s.className = "entry-sub"; s.textContent = [item.type, item.technologies, item.team ? "Team Project" : ""].filter(Boolean).join(" · "); left.append(t, s);
+    const date = document.createElement("div"); date.className = "entry-dates"; date.textContent = formatRange(item.start, item.end);
+    head.append(left, date); entry.append(head);
+    if (item.description) { const d = document.createElement("div"); d.className = "entry-description"; d.textContent = item.description; entry.appendChild(d); }
+    const links = document.createElement("div");
+    if (safeUrl(item.url)) appendLink(links, safeUrl(item.url), "Live Project");
+    if (safeUrl(item.github)) appendLink(links, safeUrl(item.github), "GitHub");
+    if (links.childNodes.length) { links.style.marginTop = "5px"; entry.appendChild(links); }
+    content.appendChild(entry);
+  });
+  parent.appendChild(section);
+}
+function renderCertificatesSection(parent, cv) {
+  const list = cv.certificates.filter(c => Object.values(c).some(v => String(v || "").trim()));
+  if (!list.length) return;
+  const { section, content } = makeSection("Certificates");
+  list.forEach(item => {
+    const entry = document.createElement("article"); entry.className = "entry";
+    const head = document.createElement("div"); head.className = "entry-head";
+    const left = document.createElement("div"); const t = document.createElement("div"); t.className = "entry-title"; t.textContent = item.name || "Certificate";
+    const s = document.createElement("div"); s.className = "entry-sub"; s.textContent = item.issuer || ""; left.append(t, s);
+    const date = document.createElement("div"); date.className = "entry-dates"; date.textContent = item.date || ""; head.append(left, date); entry.append(head);
+    if (item.id) { const d = document.createElement("div"); d.className = "entry-description"; d.textContent = `Credential ID: ${item.id}`; entry.appendChild(d); }
+    if (safeUrl(item.url)) { const links = document.createElement("div"); links.style.marginTop = "4px"; appendLink(links, safeUrl(item.url), "Credential"); entry.appendChild(links); }
+    content.appendChild(entry);
+  });
+  parent.appendChild(section);
+}
+function renderLinksSection(parent, cv) {
+  const fields = [["LinkedIn", cv.links.linkedin], ["GitHub", cv.links.github], ["Portfolio", cv.links.portfolio], ["Website", cv.links.website], ["Other", cv.links.other]].filter(([,v]) => safeUrl(v));
+  if (!fields.length) return;
+  const { section, content } = makeSection("Links");
+  const grid = document.createElement("div"); grid.className = "links-grid";
+  fields.forEach(([label, value]) => { const item = document.createElement("div"); item.className = "link-item"; const l = document.createElement("span"); l.className = "link-label"; l.textContent = `${label}:`; const a = document.createElement("a"); a.className = "cv-link"; a.href = safeUrl(value); a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = compactUrl(value); item.append(l, a); grid.appendChild(item); });
+  content.appendChild(grid); parent.appendChild(section);
+}
+function renderSimpleArraySection(parent, cv, path, title) {
+  const values = (cv[path] || []).map(v => typeof v === "string" ? v.trim() : "").filter(Boolean);
+  if (!values.length) return;
+  const { section, content } = makeSection(title);
+  const ul = document.createElement("ul"); values.forEach(value => { const li = document.createElement("li"); li.textContent = value; ul.appendChild(li); });
+  content.appendChild(ul); parent.appendChild(section);
+}
+function renderReferencesSection(parent, cv) {
+  const list = (cv.references || []).filter(r => Object.values(r).some(v => String(v || "").trim()));
+  if (!list.length) return;
+  const { section, content } = makeSection("References");
+  list.forEach(r => {
+    const entry = document.createElement("article"); entry.className = "entry";
+    const t = document.createElement("div"); t.className = "entry-title"; t.textContent = r.name || "Reference";
+    const s = document.createElement("div"); s.className = "entry-sub"; s.textContent = [r.role, r.company].filter(Boolean).join(" · ");
+    entry.append(t, s);
+    const details = [r.email, r.phone].filter(Boolean).join(" · "); if (details) { const d = document.createElement("div"); d.className = "entry-description"; d.textContent = details; entry.appendChild(d); }
+    content.appendChild(entry);
+  });
+  parent.appendChild(section);
+}
+function addBullets(parent, text, heading = "") {
+  const items = String(text || "").split(/\r?\n/).map(v => v.trim()).filter(Boolean);
+  if (!items.length) return;
+  if (heading) { const label = document.createElement("div"); label.style.marginTop = "5px"; label.style.fontWeight = "700"; label.style.color = "#0f172a"; label.textContent = heading; parent.appendChild(label); }
+  const ul = document.createElement("ul"); items.forEach(item => { const li = document.createElement("li"); li.textContent = item; ul.appendChild(li); }); parent.appendChild(ul);
+}
+function appendLink(parent, href, label) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer"; a.className = "project-url"; a.textContent = label; parent.appendChild(a); }
+function formatRange(start, end) { return [start, end].filter(Boolean).join(" to "); }
+function formatYearRange(start, end) { return [start, end].filter(Boolean).join(" to "); }
+
+function initAmbientMotion() {
+  let frame = null;
+  const update = (x, y) => {
+    document.documentElement.style.setProperty("--mx", `${x}px`);
+    document.documentElement.style.setProperty("--my", `${y}px`);
+  };
+  window.addEventListener("pointermove", event => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => update(event.clientX, event.clientY));
+  }, { passive: true });
+  window.addEventListener("pointerleave", () => {
+    document.documentElement.style.setProperty("--mx", "50vw");
+    document.documentElement.style.setProperty("--my", "50vh");
+  });
+  document.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button || button.disabled) return;
+    button.classList.remove("is-pressing");
+    void button.offsetWidth;
+    button.classList.add("is-pressing");
+    setTimeout(() => button.classList.remove("is-pressing"), 320);
+  }, { passive: true });
+}
+
+function init() {
+  profiles = profiles.map(normalizeCv);
+  if (!profiles.length) {
+    const cv = blankCv(); profiles.push(cv); activeId = cv.id; persistProfiles();
+  } else if (!profiles.some(p => p.id === activeId)) {
+    activeId = profiles[0].id; persistProfiles();
+  }
+  renderProfileSelect();
+  renderStep();
+  renderPreview();
+
+  els.profileSelect.addEventListener("change", e => setActive(e.target.value));
+  els.manageProfilesBtn.addEventListener("click", openProfileModal);
+  els.closeProfileModal.addEventListener("click", closeProfileModal);
+  els.newProfileBtn.addEventListener("click", createNewProfile);
+  els.profileModalBackdrop.addEventListener("click", e => { if (e.target === els.profileModalBackdrop) closeProfileModal(); });
+
+  els.loadExampleBtn.addEventListener("click", loadExample);
+  els.startScratchBtn.addEventListener("click", startFromScratch);
+  els.welcomeScratchBtn.addEventListener("click", startFromScratch);
+  els.welcomeExampleBtn.addEventListener("click", loadExample);
+  els.continuePreviousBtn.addEventListener("click", closeWelcome);
+  els.welcomeBackdrop.addEventListener("click", e => { if (e.target === els.welcomeBackdrop && profiles.length && hasAnyData(currentCv())) closeWelcome(); });
+
+  els.backBtn.addEventListener("click", () => goToStep(currentStep - 1));
+  els.continueBtn.addEventListener("click", () => {
+    if (!validateCurrentStep()) return;
+    if (currentStep < STEPS.length - 1) goToStep(currentStep + 1);
+    else printCv();
+  });
+  els.saveBtn.addEventListener("click", () => { persistProfiles(); setSaveState("Saved", true); showToast("CV saved in this browser."); });
+  els.mobilePreviewBtn.addEventListener("click", openMobilePreview);
+  els.downloadTopBtn.addEventListener("click", printCv);
+  document.addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+      event.preventDefault();
+      persistProfiles();
+      setSaveState("Saved", true);
+      showToast("CV saved in this browser.");
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "p") {
+      event.preventDefault();
+      printCv();
+    }
+  });
+  initAmbientMotion();
+
+  if (profiles.length > 0 && hasAnyData(currentCv())) {
+    els.welcomeExisting.classList.remove("hidden");
+  }
+}
+
+init();
+
+  </script>
+</body>
+</html>
