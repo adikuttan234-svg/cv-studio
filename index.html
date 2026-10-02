@@ -338,7 +338,8 @@ h3 { margin-bottom: 5px; font-size: 15px; }
 }
 .preview-actions { display: flex; gap: 8px; }
 .preview-scroll { flex: 1; overflow: auto; padding: 24px; }
-.cv-canvas { display: flex; justify-content: center; min-width: max-content; }
+.cv-canvas { position: relative; display: block; }
+.cv-canvas .cv-page { position: absolute; top: 0; left: 0; }
 
 /* A4 document */
 .cv-page {
@@ -356,17 +357,18 @@ h3 { margin-bottom: 5px; font-size: 15px; }
   align-self: flex-start;
   flex: 0 0 auto;
 }
-/* Profile photo shape options */
-.cv-page.photo-shape-square .cv-photo { border-radius: 0; }
-.cv-page.photo-shape-circle .cv-photo { border-radius: 50%; }
-.cv-page.photo-shape-rounded .cv-photo { border-radius: 14px; }
+/* Profile photo frame + shape options */
+.cv-page .cv-photo-frame { width: 92px; height: 92px; flex: none; display: block; position: relative; overflow: hidden; border-radius: 14px; box-sizing: border-box; }
+.cv-page.photo-shape-square .cv-photo-frame { border-radius: 0; }
+.cv-page.photo-shape-circle .cv-photo-frame { border-radius: 50%; }
+.cv-page.photo-shape-rounded .cv-photo-frame { border-radius: 14px; }
 /* Profile photo border options */
-.cv-page.photo-border-none .cv-photo { border: none; }
-.cv-page.photo-border-thin .cv-photo { border: 2px solid var(--cv-accent); box-sizing: border-box; }
-.cv-page.photo-border-medium .cv-photo { border: 4px solid var(--cv-accent); box-sizing: border-box; }
-.cv-page.photo-border-thick .cv-photo { border: 6px solid var(--cv-accent); box-sizing: border-box; }
-.cv-page.photo-border-dark .cv-photo { border: 3px solid #0f172a; box-sizing: border-box; }
-.cv-page.photo-border-light .cv-photo { border: 3px solid #e2e8f0; box-sizing: border-box; }
+.cv-page.photo-border-none .cv-photo-frame { border: none; }
+.cv-page.photo-border-thin .cv-photo-frame { border: 2px solid var(--cv-accent); }
+.cv-page.photo-border-medium .cv-photo-frame { border: 4px solid var(--cv-accent); }
+.cv-page.photo-border-thick .cv-photo-frame { border: 6px solid var(--cv-accent); }
+.cv-page.photo-border-dark .cv-photo-frame { border: 3px solid #0f172a; }
+.cv-page.photo-border-light .cv-photo-frame { border: 3px solid #e2e8f0; }
 .cv-page *, .cv-page *::before, .cv-page *::after { box-sizing: border-box; }
 .cv-page a { color: inherit; text-decoration: none; }
 .cv-page .cv-link { word-break: break-word; }
@@ -375,7 +377,7 @@ h3 { margin-bottom: 5px; font-size: 15px; }
 .cv-page .cv-title { margin-top: 7px; color: var(--cv-accent); font-size: 13px; font-weight: 700; }
 .cv-page .cv-contact { display: flex; flex-wrap: wrap; gap: 6px 15px; margin-top: 15px; color: #475569; font-size: 9.6px; line-height: 1.45; }
 .cv-page .cv-contact span, .cv-page .cv-contact a { display: inline-flex; align-items: center; gap: 4px; }
-.cv-page .cv-photo { width: 92px; height: 92px; object-fit: cover; border-radius: 14px; flex: none; }
+.cv-page .cv-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cv-page .header-inner { display: flex; justify-content: space-between; gap: 25px; }
 .cv-page .cv-main { padding: 0 48px 48px; }
 .cv-page .cv-section { margin-bottom: calc(19px * var(--cv-space)); break-inside: avoid; }
@@ -428,7 +430,7 @@ h3 { margin-bottom: 5px; font-size: 15px; }
 .cv-page.template-elegant { font-family: Manrope, Inter, sans-serif; }
 .cv-page.template-elegant .cv-header { padding: 50px 58px 34px; text-align: center; }
 .cv-page.template-elegant .header-inner { justify-content: center; }
-.cv-page.template-elegant .cv-header .cv-photo { order: -1; margin-right: 10px; }
+.cv-page.template-elegant .cv-header .cv-photo-frame { order: -1; margin-right: 10px; }
 .cv-page.template-elegant .cv-contact { justify-content: center; }
 .cv-page.template-elegant .cv-title { letter-spacing: .11em; text-transform: uppercase; }
 .cv-page.template-elegant .cv-main { padding: 0 58px 46px; }
@@ -920,7 +922,6 @@ body.dark-ui .template-thumb{background:#111827;border-color:#243047}
   .theme-toggle .theme-label{display:none}
   .topbar{margin:8px 8px 0}
   .preview-scroll{padding:10px}
-  .cv-page{transform:scale(.82);transform-origin:top center;margin-bottom:-200px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
 /* 50 template visual systems */
@@ -1406,9 +1407,6 @@ html[data-cv-theme="dark"] .progress-step{background:#0f172a !important;color:#c
   .cv-page {
     width:794px;
     min-height:1123px;
-    transform:scale(.43);
-    transform-origin:top center;
-    margin-bottom:-640px;
   }
   .design-studio { gap:12px; }
   .design-toolbar { align-items:stretch; }
@@ -1485,7 +1483,7 @@ html[data-cv-theme="dark"] .progress-step{background:#0f172a !important;color:#c
   .preview-panel.mobile-open .preview-head { position:sticky; top:0; z-index:5; }
   .preview-panel.mobile-open .preview-scroll { flex:1; overflow:auto; padding:12px; }
   .preview-panel.mobile-open .cv-canvas { width:100%; min-width:0; justify-content:center; }
-  .preview-panel.mobile-open .cv-page { width:794px; min-height:1123px; transform:scale(.43); transform-origin:top center; margin-bottom:-640px; }
+  .preview-panel.mobile-open .cv-page { width:794px; min-height:1123px; }
   .design-grid { grid-template-columns:1fr !important; max-height:none !important; overflow:visible !important; }
   .template-card { min-height:0 !important; width:100% !important; }
   .template-preview-wrap { height:250px !important; min-height:250px !important; max-height:250px !important; }
@@ -1591,6 +1589,47 @@ html[data-cv-theme="dark"] .text-style-preview span{color:#94a3b8 !important}
 html[data-cv-theme="dark"] .example-chip{background:#0f172a;color:#e5eefc;border-color:#334155}
 .template-card{content-visibility:auto;contain-intrinsic-size:auto 330px}
 .template-more-wrap{padding:12px 2px 2px}
+
+/* Profile photo editor modal */
+.photo-modal { max-width: 640px; width: min(640px, 100%); }
+.photo-editor { display: grid; grid-template-columns: 180px minmax(0,1fr); gap: 20px; align-items: start; }
+.photo-editor-preview { display: flex; justify-content: center; padding-top: 4px; }
+.photo-sample { width: 150px; height: 150px; overflow: hidden; border-radius: 16px; box-sizing: border-box; background: #eef2f7; border: 1px solid var(--border-strong); }
+.photo-sample img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-sample.shape-square { border-radius: 0; }
+.photo-sample.shape-rounded { border-radius: 16px; }
+.photo-sample.shape-circle { border-radius: 50%; }
+.photo-sample.border-none { border: none; }
+.photo-sample.border-thin { border: 3px solid #2563eb; }
+.photo-sample.border-medium { border: 5px solid #2563eb; }
+.photo-sample.border-thick { border: 7px solid #2563eb; }
+.photo-sample.border-dark { border: 4px solid #0f172a; }
+.photo-sample.border-light { border: 4px solid #cbd5e1; }
+.photo-editor-controls { display: grid; gap: 12px; }
+.seg-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg-btn { flex: 1; min-width: 74px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border-strong); background: #fff; font-size: 12px; font-weight: 600; color: #334155; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+.seg-btn.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+.align-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 138px; }
+.align-grid button { height: 34px; border-radius: 8px; border: 1px solid var(--border-strong); background: #fff; position: relative; }
+.align-grid button::after { content: ""; position: absolute; inset: 0; margin: auto; width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; }
+.align-grid button.active { border-color: #2563eb; background: #eff6ff; }
+.align-grid button.active::after { background: #2563eb; }
+.photo-modal .modal-actions { display: flex; justify-content: space-between; gap: 10px; }
+@media (max-width: 560px) { .photo-editor { grid-template-columns: 1fr; } }
+
+/* Print hardening: the CV page must be the only printable content and never clipped */
+@media print {
+  @page { size: A4; margin: 0; }
+  html, body { width: auto !important; height: auto !important; min-height: 0 !important; background: #fff !important; overflow: visible !important; }
+  body::before, .ambient-bg { display: none !important; }
+  .no-print, .topbar, .progress-bar, .editor-panel, .preview-head, .toast-wrap, .modal-backdrop { display: none !important; }
+  .app-shell { display: block !important; min-height: 0 !important; }
+  .workspace { display: block !important; grid-template-columns: none !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; gap: 0 !important; }
+  .preview-panel { display: block !important; position: static !important; overflow: visible !important; width: auto !important; max-width: none !important; min-height: 0 !important; height: auto !important; background: #fff !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; backdrop-filter: none !important; }
+  .preview-scroll { display: block !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; max-height: none !important; background: none !important; }
+  .cv-canvas { display: block !important; position: static !important; width: auto !important; height: auto !important; min-width: 0 !important; min-height: 0 !important; margin: 0 !important; }
+  .cv-page { position: static !important; width: 210mm !important; min-height: 297mm !important; margin: 0 !important; transform: none !important; transform-origin: top left !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; overflow: visible !important; animation: none !important; }
+}
 </style>
 </head>
 <body>
@@ -1697,6 +1736,72 @@ html[data-cv-theme="dark"] .example-chip{background:#0f172a;color:#e5eefc;border
         <button class="btn btn-ghost btn-wide" id="welcomeExampleBtn" type="button">Load Example CV</button>
       </div>
       <p class="privacy-line"><span class="privacy-dot"></span>Your CV stays in this browser using localStorage. It is not sent to a server.</p>
+    </div>
+  </div>
+
+  <div class="modal-backdrop no-print hidden" id="photoModalBackdrop">
+    <div class="modal photo-modal" role="dialog" aria-modal="true" aria-labelledby="photoModalTitle">
+      <div class="modal-head">
+        <div>
+          <span class="eyebrow">PROFILE PHOTO</span>
+          <h2 id="photoModalTitle">Make your photo look right</h2>
+        </div>
+        <button class="icon-btn" id="closePhotoModal" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="photo-editor">
+        <div class="photo-editor-preview">
+          <div class="photo-sample shape-rounded border-none" id="photoSample">
+            <img id="photoSampleImg" alt="Profile photo preview" />
+          </div>
+        </div>
+        <div class="photo-editor-controls">
+          <div class="field">
+            <label>Shape</label>
+            <div class="seg-group" id="photoShapeGroup">
+              <button type="button" class="seg-btn" data-photo-shape="square">Square</button>
+              <button type="button" class="seg-btn" data-photo-shape="rounded">Rounded</button>
+              <button type="button" class="seg-btn" data-photo-shape="circle">Circle</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="photoBorderSelectModal">Border</label>
+            <select id="photoBorderSelectModal">
+              <option value="none">No border</option>
+              <option value="thin">Thin accent</option>
+              <option value="medium">Medium accent</option>
+              <option value="thick">Thick accent</option>
+              <option value="dark">Dark</option>
+              <option value="light">Light gray</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="photoZoomRange">Zoom <span class="counter" id="photoZoomCounter">1.0×</span></label>
+            <input id="photoZoomRange" type="range" min="1" max="2.5" step="0.05" value="1" />
+          </div>
+          <div class="field">
+            <label>Alignment</label>
+            <div class="align-grid" id="photoAlignGrid">
+              <button type="button" data-align="0 0" aria-label="Top left"></button>
+              <button type="button" data-align="50 0" aria-label="Top center"></button>
+              <button type="button" data-align="100 0" aria-label="Top right"></button>
+              <button type="button" data-align="0 50" aria-label="Middle left"></button>
+              <button type="button" data-align="50 50" aria-label="Center"></button>
+              <button type="button" data-align="100 50" aria-label="Middle right"></button>
+              <button type="button" data-align="0 100" aria-label="Bottom left"></button>
+              <button type="button" data-align="50 100" aria-label="Bottom center"></button>
+              <button type="button" data-align="100 100" aria-label="Bottom right"></button>
+            </div>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label for="photoAlignXRange">Horizontal <span class="counter" id="photoAlignXCounter">50%</span></label><input id="photoAlignXRange" type="range" min="0" max="100" step="1" value="50" /></div>
+            <div class="field"><label for="photoAlignYRange">Vertical <span class="counter" id="photoAlignYCounter">50%</span></label><input id="photoAlignYRange" type="range" min="0" max="100" step="1" value="50" /></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="photoRemoveBtn" type="button">Remove Photo</button>
+        <button class="btn btn-primary" id="photoApplyBtn" type="button">Apply</button>
+      </div>
     </div>
   </div>
 
@@ -1841,7 +1946,7 @@ function templateArchetypeCss(a) {
     case "left-rule":
       return S+" .cv-section{border-left:3px solid var(--cv-accent);padding-left:14px}";
     case "split-head":
-      return S+" .cv-header{padding:0}"+S+" .header-inner{align-items:stretch;gap:0}"+S+" .header-inner>div:first-child{flex:1;padding:38px 40px;background:var(--cv-accent);color:#fff}"+S+" .cv-name{color:#fff}"+S+" .cv-title,"+S+" .cv-contact,"+S+" .cv-contact a{color:rgba(255,255,255,.92)}"+S+" .cv-photo{width:34%;height:auto;min-height:150px;border-radius:0;align-self:stretch;object-fit:cover}"+S+" .cv-main{padding-top:26px}";
+      return S+" .cv-header{padding:0}"+S+" .header-inner{align-items:stretch;gap:0}"+S+" .header-inner>div:first-child{flex:1;padding:38px 40px;background:var(--cv-accent);color:#fff}"+S+" .cv-name{color:#fff}"+S+" .cv-title,"+S+" .cv-contact,"+S+" .cv-contact a{color:rgba(255,255,255,.92)}"+S+" .cv-photo-frame{width:34%;height:auto;min-height:150px;border-radius:0;align-self:stretch}"+S+" .cv-main{padding-top:26px}";
     case "duotone":
       return S+"{display:grid;grid-template-columns:236px 1fr;min-height:var(--cv-height)}"+S+" .cv-header{grid-column:1/-1;padding:36px 40px 26px;background:linear-gradient(100deg,var(--cv-accent) 0 38%,#fff 38%)}"+S+" .cv-sidebar{padding:26px 24px 40px 40px;background:#f5f8fc;background:"+tintStrong+";border-right:1px solid #e2e8f0}"+S+" .cv-main{padding:26px 40px 40px 30px}"+S+" .cv-sidebar .cv-section{margin-bottom:16px}";
     case "cards":
@@ -1863,7 +1968,7 @@ function templateArchetypeCss(a) {
     case "newspaper":
       return S+" .cv-main{column-count:2;column-gap:30px}"+S+" .cv-main>.cv-section:first-child{column-span:all}"+S+" .section-heading{border-bottom:2px solid #0f172a;padding-bottom:4px}"+S+" .section-heading .rule{display:none}";
     case "spotlight":
-      return S+" .cv-header{padding:0}"+S+" .header-inner{align-items:stretch}"+S+" .header-inner>div:first-child{flex:1;padding:40px 44px;background:#0f172a;color:#fff}"+S+" .cv-name{color:#fff}"+S+" .cv-title{color:var(--cv-accent)}"+S+" .cv-contact,"+S+" .cv-contact a{color:#cbd5e1}"+S+" .cv-photo{width:150px;height:150px;border-radius:12px;align-self:center;margin:28px 44px 28px 0}"+S+" .cv-main{padding-top:28px}";
+      return S+" .cv-header{padding:0}"+S+" .header-inner{align-items:stretch}"+S+" .header-inner>div:first-child{flex:1;padding:40px 44px;background:#0f172a;color:#fff}"+S+" .cv-name{color:#fff}"+S+" .cv-title{color:var(--cv-accent)}"+S+" .cv-contact,"+S+" .cv-contact a{color:#cbd5e1}"+S+" .cv-photo-frame{width:150px;height:150px;border-radius:12px;align-self:center;margin:28px 44px 28px 0}"+S+" .cv-main{padding-top:28px}";
     case "tags":
       return S+" .section-heading{background:var(--cv-accent);color:#fff;padding:4px 11px;border-radius:999px;display:inline-flex}"+S+" .section-heading .rule{display:none}"+S+" .skills-grid{grid-template-columns:repeat(3,minmax(0,1fr))}"+S+" .skill-row{background:#f1f5f9;background:"+tint+";border-radius:999px;padding:4px 10px}";
     default:
@@ -1947,6 +2052,11 @@ const els = {
   stepDescription: $("#stepDescription"),
   stepContent: $("#stepContent"),
   cvCanvas: $("#cvCanvas"),
+  previewScroller: $("#previewScroller"),
+  photoModalBackdrop: $("#photoModalBackdrop"),
+  closePhotoModal: $("#closePhotoModal"),
+  photoApplyBtn: $("#photoApplyBtn"),
+  photoRemoveBtn: $("#photoRemoveBtn"),
   backBtn: $("#backBtn"),
   continueBtn: $("#continueBtn"),
   saveBtn: $("#saveBtn"),
@@ -2006,6 +2116,9 @@ function blankCv(name = "Untitled CV") {
       textStyle: "text-01",
       photoShape: "rounded",
       photoBorder: "none",
+      photoZoom: 1,
+      photoAlignX: 50,
+      photoAlignY: 50,
       customCss: "",
       enabledSections: Object.fromEntries(ALL_SECTION_IDS.map(id => [id, CORE_SECTION_IDS.includes(id)])),
       sectionOrder: ["profile", "experience", "education", "skills", "projects", "certificates", "achievements", "languages", "interests", "volunteer", "references", "links"]
@@ -2461,7 +2574,7 @@ function templateMiniSvg(t, index) {
 const CSS_EXAMPLES = {
   "big-name": "\n.cv-page .cv-name { font-size: 42px; letter-spacing: -0.03em; }\n",
   "hide-rule": "\n.cv-page .section-heading .rule { display: none; }\n.cv-page .section-heading { letter-spacing: 0.16em; }\n",
-  "round-photo": "\n.cv-page .cv-photo { border-radius: 50%; width: 110px; height: 110px; }\n",
+  "round-photo": "\n.cv-page .cv-photo-frame { border-radius: 50%; width: 110px; height: 110px; }\n",
   "serif-headings": "\n.cv-page .section-heading { font-family: Georgia, 'Times New Roman', serif; text-transform: none; letter-spacing: 0; font-size: 14px; }\n",
   "tight": "\n.cv-page .cv-section { margin-bottom: 10px; }\n.cv-page .section-content { line-height: 1.4; }\n",
   "accent-bg": "\n.cv-page .cv-header { background: var(--cv-accent); color: #fff; }\n.cv-page .cv-header .cv-name, .cv-page .cv-header .cv-title, .cv-page .cv-header .cv-contact { color: #fff; }\n"
@@ -2576,6 +2689,8 @@ function bindStepEvents() {
   });
   const photoInput = $("#photoInput");
   if (photoInput) photoInput.addEventListener("change", handlePhotoUpload);
+  const adjustPhotoBtn = $("#adjustPhotoBtn");
+  if (adjustPhotoBtn) adjustPhotoBtn.addEventListener("click", openPhotoModal);
   const removePhotoBtn = $("#removePhotoBtn");
   if (removePhotoBtn) removePhotoBtn.addEventListener("click", () => {
     currentCv().personal.photo = "";
@@ -2902,6 +3017,67 @@ function createNewProfile() {
 
 function openProfileModal() { renderProfileList(); els.profileModalBackdrop.classList.remove("hidden"); }
 function closeProfileModal() { els.profileModalBackdrop.classList.add("hidden"); }
+
+/* Profile photo editor */
+let photoDraft = null;
+
+function openPhotoModal() {
+  const cv = currentCv();
+  if (!cv || !cv.personal.photo) { showToast("Add a profile photo first."); return; }
+  photoDraft = {
+    photoShape: cv.settings.photoShape || "rounded",
+    photoBorder: cv.settings.photoBorder || "none",
+    photoZoom: Number(cv.settings.photoZoom ?? 1),
+    photoAlignX: Number(cv.settings.photoAlignX ?? 50),
+    photoAlignY: Number(cv.settings.photoAlignY ?? 50)
+  };
+  syncPhotoModal();
+  els.photoModalBackdrop.classList.remove("hidden");
+}
+function closePhotoModal() { els.photoModalBackdrop.classList.add("hidden"); }
+
+function syncPhotoModal() {
+  if (!photoDraft) return;
+  const img = $("#photoSampleImg");
+  if (img) {
+    img.src = currentCv()?.personal.photo || "";
+    img.style.objectPosition = `${photoDraft.photoAlignX}% ${photoDraft.photoAlignY}%`;
+    img.style.transform = `scale(${photoDraft.photoZoom})`;
+  }
+  const sample = $("#photoSample");
+  if (sample) sample.className = `photo-sample shape-${photoDraft.photoShape} border-${photoDraft.photoBorder}`;
+  $$("#photoShapeGroup .seg-btn").forEach(b => b.classList.toggle("active", b.dataset.photoShape === photoDraft.photoShape));
+  const borderSelect = $("#photoBorderSelectModal"); if (borderSelect) borderSelect.value = photoDraft.photoBorder;
+  const zoomRange = $("#photoZoomRange"); if (zoomRange) zoomRange.value = String(photoDraft.photoZoom);
+  const zoomCounter = $("#photoZoomCounter"); if (zoomCounter) zoomCounter.textContent = `${photoDraft.photoZoom.toFixed(1)}×`;
+  const xRange = $("#photoAlignXRange"); if (xRange) xRange.value = String(photoDraft.photoAlignX);
+  const yRange = $("#photoAlignYRange"); if (yRange) yRange.value = String(photoDraft.photoAlignY);
+  const xCounter = $("#photoAlignXCounter"); if (xCounter) xCounter.textContent = `${photoDraft.photoAlignX}%`;
+  const yCounter = $("#photoAlignYCounter"); if (yCounter) yCounter.textContent = `${photoDraft.photoAlignY}%`;
+  $$("#photoAlignGrid button").forEach(b => {
+    const [x, y] = b.dataset.align.split(" ").map(Number);
+    b.classList.toggle("active", x === photoDraft.photoAlignX && y === photoDraft.photoAlignY);
+  });
+}
+
+function applyPhotoSettings() {
+  const cv = currentCv();
+  if (!cv || !photoDraft) return;
+  Object.assign(cv.settings, photoDraft);
+  scheduleSave();
+  closePhotoModal();
+  renderPreview();
+}
+
+function removeProfilePhoto() {
+  const cv = currentCv();
+  if (!cv) return;
+  cv.personal.photo = "";
+  scheduleSave();
+  closePhotoModal();
+  renderStep();
+  renderPreview();
+}
 function openWelcome() { els.welcomeBackdrop.classList.remove("hidden"); }
 function closeWelcome() { els.welcomeBackdrop.classList.add("hidden"); }
 
@@ -2978,7 +3154,8 @@ function goToStep(index) {
 function openMobilePreview() {
   const panel = $(".preview-panel");
   panel.classList.add("mobile-open");
-  setTimeout(() => $("#cvCanvas")?.scrollIntoView({ behavior: "smooth", block: "start" }), 40);
+  scheduleFitPreview();
+  setTimeout(() => { scheduleFitPreview(); $("#cvCanvas")?.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
 }
 function closeMobilePreview() { $(".preview-panel")?.classList.remove("mobile-open"); }
 
@@ -3064,6 +3241,36 @@ function renderPreview() {
     document.head.appendChild(custom);
   }
   custom.textContent = cv.settings.customCss || "";
+  scheduleFitPreview();
+}
+
+/* Scale the A4 page so the whole document fits inside the preview area without scrolling. */
+function fitPreview() {
+  const scroller = els.previewScroller;
+  const canvas = els.cvCanvas;
+  if (!scroller || !canvas) return;
+  const page = canvas.querySelector(".cv-page");
+  if (!page) { canvas.style.width = ""; canvas.style.height = ""; return; }
+  page.style.transform = "none";
+  canvas.style.width = "";
+  canvas.style.height = "";
+  const naturalW = page.offsetWidth || 794;
+  const naturalH = page.offsetHeight || 1123;
+  const cs = getComputedStyle(scroller);
+  const availW = scroller.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+  const availH = scroller.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+  if (availW <= 0 || availH <= 0) return;
+  const scale = Math.min(1, availW / naturalW, availH / naturalH);
+  page.style.transformOrigin = "top left";
+  page.style.transform = `scale(${scale})`;
+  canvas.style.width = `${Math.round(naturalW * scale)}px`;
+  canvas.style.height = `${Math.round(naturalH * scale)}px`;
+  canvas.style.margin = "0 auto";
+}
+let fitPreviewRaf = 0;
+function scheduleFitPreview() {
+  cancelAnimationFrame(fitPreviewRaf);
+  fitPreviewRaf = requestAnimationFrame(() => requestAnimationFrame(fitPreview));
 }
 
 function buildCvPage(cv) {
@@ -3095,8 +3302,13 @@ function buildCvPage(cv) {
   identity.append(name, title || document.createTextNode(""), contact);
   inner.appendChild(identity);
   if (cv.personal.photo) {
+    const frame = document.createElement("div"); frame.className = "cv-photo-frame";
     const img = document.createElement("img"); img.className = "cv-photo"; img.src = cv.personal.photo; img.alt = "";
-    inner.appendChild(img);
+    img.style.objectPosition = `${Number(cv.settings.photoAlignX ?? 50)}% ${Number(cv.settings.photoAlignY ?? 50)}%`;
+    const zoom = Number(cv.settings.photoZoom ?? 1);
+    if (zoom && zoom !== 1) img.style.transform = `scale(${zoom})`;
+    frame.appendChild(img);
+    inner.appendChild(frame);
   }
   header.appendChild(inner);
   page.appendChild(header);
@@ -3360,6 +3572,24 @@ function init() {
   els.newProfileBtn.addEventListener("click", createNewProfile);
   els.profileModalBackdrop.addEventListener("click", e => { if (e.target === els.profileModalBackdrop) closeProfileModal(); });
 
+  els.closePhotoModal.addEventListener("click", closePhotoModal);
+  els.photoApplyBtn.addEventListener("click", applyPhotoSettings);
+  els.photoRemoveBtn.addEventListener("click", removeProfilePhoto);
+  els.photoModalBackdrop.addEventListener("click", e => { if (e.target === els.photoModalBackdrop) closePhotoModal(); });
+  $$("#photoShapeGroup .seg-btn").forEach(btn => btn.addEventListener("click", () => { photoDraft.photoShape = btn.dataset.photoShape; syncPhotoModal(); }));
+  const photoBorderModal = $("#photoBorderSelectModal");
+  if (photoBorderModal) photoBorderModal.addEventListener("change", () => { photoDraft.photoBorder = photoBorderModal.value; syncPhotoModal(); });
+  const photoZoomRange = $("#photoZoomRange");
+  if (photoZoomRange) photoZoomRange.addEventListener("input", () => { photoDraft.photoZoom = Number(photoZoomRange.value); syncPhotoModal(); });
+  const photoAlignXRange = $("#photoAlignXRange");
+  if (photoAlignXRange) photoAlignXRange.addEventListener("input", () => { photoDraft.photoAlignX = Number(photoAlignXRange.value); syncPhotoModal(); });
+  const photoAlignYRange = $("#photoAlignYRange");
+  if (photoAlignYRange) photoAlignYRange.addEventListener("input", () => { photoDraft.photoAlignY = Number(photoAlignYRange.value); syncPhotoModal(); });
+  $$("#photoAlignGrid button").forEach(btn => btn.addEventListener("click", () => {
+    const [x, y] = btn.dataset.align.split(" ").map(Number);
+    photoDraft.photoAlignX = x; photoDraft.photoAlignY = y; syncPhotoModal();
+  }));
+
   els.loadExampleBtn.addEventListener("click", loadExample);
   els.startScratchBtn.addEventListener("click", startFromScratch);
   els.welcomeScratchBtn.addEventListener("click", startFromScratch);
@@ -3393,6 +3623,10 @@ function init() {
       printCv();
     }
   });
+  if (window.ResizeObserver && els.previewScroller) {
+    new ResizeObserver(() => scheduleFitPreview()).observe(els.previewScroller);
+  }
+  window.addEventListener("resize", scheduleFitPreview);
   initAmbientMotion();
 
   if (profiles.length > 0 && hasAnyData(currentCv())) {
