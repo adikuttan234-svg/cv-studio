@@ -12,7 +12,7 @@
   <title>CV Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Source+Sans+3:wght@400;500;600;700&family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&family=Raleway:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&family=Work+Sans:wght@400;600;700&family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&family=Outfit:wght@400;600;700&family=Figtree:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Rubik:wght@400;600;700&family=Karla:wght@400;600;700&family=Mulish:wght@400;600;700&family=Barlow:wght@400;600;700&family=Archivo:wght@400;600;700&family=Public+Sans:wght@400;600;700&family=Fira+Sans:wght@400;600;700&family=Ubuntu:wght@400;500;700&family=Quicksand:wght@400;600;700&family=Josefin+Sans:wght@400;600;700&family=Playfair+Display:wght@400;600;700;800&family=Merriweather:wght@400;700;900&family=Lora:wght@400;600;700&family=PT+Serif:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Crimson+Text:wght@400;600;700&family=Cormorant+Garamond:wght@400;600;700&family=IBM+Plex+Serif:wght@400;600;700&family=Libre+Franklin:wght@400;600;700&family=Noto+Sans:wght@400;600;700&family=Bitter:wght@400;600;700&family=Oswald:wght@400;600;700&family=Anton&display=swap" rel="stylesheet">
   <style>
 :root {
   --bg: #f4f6f8;
@@ -1481,6 +1481,103 @@ html[data-cv-theme="dark"] .progress-step{background:#0f172a !important;color:#c
     min-width:190px !important; min-height:242px !important; max-width:190px !important; max-height:242px !important;
   }
 }
+
+/* Futuristic notification system */
+.toast-wrap{
+  position:fixed;right:20px;bottom:20px;z-index:140;
+  display:grid;gap:10px;justify-items:end;pointer-events:none;
+}
+.toast{
+  position:relative;display:flex;align-items:center;gap:11px;
+  min-width:230px;max-width:360px;padding:12px 15px 14px;
+  border-radius:15px;color:#f8fafc;font-size:12.5px;font-weight:600;letter-spacing:.01em;
+  background:linear-gradient(135deg,rgba(15,23,42,.97),rgba(30,41,59,.94));
+  border:1px solid rgba(96,165,250,.3);
+  box-shadow:0 20px 48px rgba(2,6,23,.42),inset 0 1px 0 rgba(255,255,255,.14);
+  backdrop-filter:blur(16px);overflow:hidden;
+  animation:toastIn .55s cubic-bezier(.16,1,.3,1),toastOut .45s cubic-bezier(.4,0,1,1) var(--toast-life,2600ms) forwards;
+}
+.toast::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 12% 0%,rgba(96,165,250,.26),transparent 62%);
+}
+.toast-icon{
+  position:relative;z-index:1;display:grid;place-items:center;flex:none;
+  width:27px;height:27px;border-radius:9px;font-size:14px;color:#fff;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  box-shadow:0 7px 18px rgba(37,99,235,.5);
+}
+.toast-msg{position:relative;z-index:1;line-height:1.4}
+.toast-bar{
+  position:absolute;left:0;bottom:0;height:2px;width:100%;
+  background:linear-gradient(90deg,#60a5fa,#a78bfa,#22d3ee);
+  transform-origin:left;animation:toastBar var(--toast-life,2600ms) linear forwards;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(46px) scale(.92)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(34px) scale(.96)}}
+@keyframes toastBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* Comprehensive dark mode */
+html[data-cv-theme="dark"] .modal{background:#0f172a !important;color:#e5eefc;border-color:#26354d !important}
+html[data-cv-theme="dark"] .modal-backdrop{background:rgba(2,6,23,.72)}
+html[data-cv-theme="dark"] .profile-row,
+html[data-cv-theme="dark"] .repeat-card,
+html[data-cv-theme="dark"] .skill-category,
+html[data-cv-theme="dark"] .empty-state{background:#111827 !important;border-color:#26354d !important;color:#cbd5e1}
+html[data-cv-theme="dark"] .profile-row.active{background:#172554 !important;border-color:#1d4ed8 !important}
+html[data-cv-theme="dark"] .section-note{background:#172554 !important;color:#bfdbfe !important}
+html[data-cv-theme="dark"] .hint,
+html[data-cv-theme="dark"] .counter,
+html[data-cv-theme="dark"] .optional-label,
+html[data-cv-theme="dark"] .template-desc,
+html[data-cv-theme="dark"] .repeat-card-meta,
+html[data-cv-theme="dark"] .profile-meta,
+html[data-cv-theme="dark"] .eyebrow,
+html[data-cv-theme="dark"] .existing-title,
+html[data-cv-theme="dark"] .template-library-meta,
+html[data-cv-theme="dark"] .design-toolbar .hint{color:#94a3b8 !important}
+html[data-cv-theme="dark"] .field label,
+html[data-cv-theme="dark"] .cv-profile-select-wrap label,
+html[data-cv-theme="dark"] .checkbox-row{color:#cbd5e1 !important}
+html[data-cv-theme="dark"] .order-grip,
+html[data-cv-theme="dark"] .order-item button,
+html[data-cv-theme="dark"] .icon-btn,
+html[data-cv-theme="dark"] .skill-chip button{color:#94a3b8 !important}
+html[data-cv-theme="dark"] .skill-chip,
+html[data-cv-theme="dark"] .order-item,
+html[data-cv-theme="dark"] .small-btn,
+html[data-cv-theme="dark"] .add-btn,
+html[data-cv-theme="dark"] .btn-secondary,
+html[data-cv-theme="dark"] .btn-ghost{background:#0f172a !important;color:#e5eefc !important;border-color:#334155 !important}
+html[data-cv-theme="dark"] .btn-ghost:hover,
+html[data-cv-theme="dark"] .btn-secondary:hover,
+html[data-cv-theme="dark"] .small-btn:hover,
+html[data-cv-theme="dark"] .add-btn:hover{background:#1e293b !important}
+html[data-cv-theme="dark"] .skill-add-row input,
+html[data-cv-theme="dark"] .skill-category input{background:#0b1220 !important;color:#e5eefc !important;border-color:#334155 !important}
+html[data-cv-theme="dark"] .cv-profile-select-wrap select{background:#0f172a !important;color:#e5eefc !important;border-color:#334155 !important}
+html[data-cv-theme="dark"] .progress-step.active{background:#172554 !important;color:#93c5fd !important;border-color:#1d4ed8 !important}
+html[data-cv-theme="dark"] .progress-step.done{color:#cbd5e1 !important}
+html[data-cv-theme="dark"] .progress-arrow{color:#475569 !important}
+html[data-cv-theme="dark"] .brand-mark{background:linear-gradient(135deg,#1e293b,#334155 70%,#60a5fa) !important}
+html[data-cv-theme="dark"] .preview-scroll{background:radial-gradient(circle at 20% 15%,rgba(30,41,59,.8),transparent 30%),linear-gradient(135deg,#0b1220,#020617) !important}
+html[data-cv-theme="dark"] .welcome-modal::before{background:radial-gradient(circle,rgba(96,165,250,.18),transparent 64%)}
+html[data-cv-theme="dark"] .error-text{color:#fca5a5}
+html[data-cv-theme="dark"] .field.invalid input,
+html[data-cv-theme="dark"] .field.invalid textarea{border-color:#f87171 !important}
+html[data-cv-theme="dark"] .toast{background:linear-gradient(135deg,rgba(2,6,23,.98),rgba(15,23,42,.95))}
+html[data-cv-theme="dark"] .text-style-preview{background:linear-gradient(135deg,#172554,#2e1065) !important;color:#e2e8f0 !important}
+html[data-cv-theme="dark"] .text-style-preview span{color:#94a3b8 !important}
+
+/* Custom design studio + template performance */
+.example-chips{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:10px 0 6px}
+.example-chips-label{color:var(--text-soft);font-size:11px;font-weight:700}
+.example-chip{border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.8);color:#334155;padding:5px 11px;font-size:11px;font-weight:700;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+.example-chip:hover{transform:translateY(-1px);box-shadow:0 7px 16px rgba(37,99,235,.12);background:#fff}
+#customCssInput{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.6;min-height:150px}
+html[data-cv-theme="dark"] .example-chip{background:#0f172a;color:#e5eefc;border-color:#334155}
+.template-card{content-visibility:auto;contain-intrinsic-size:auto 330px}
+.template-more-wrap{padding:12px 2px 2px}
 </style>
 </head>
 <body>
@@ -1597,7 +1694,38 @@ html[data-cv-theme="dark"] .progress-step{background:#0f172a !important;color:#c
   <script>
 const STORAGE_KEY = "cvStudioProfilesV1";
 const ACTIVE_KEY = "cvStudioActiveV1";
-const FONT_OPTIONS = ["Inter", "Manrope", "IBM Plex Sans", "Source Sans 3", "Roboto"];
+const FONT_OPTIONS = [
+  "Inter", "Manrope", "IBM Plex Sans", "Source Sans 3", "Roboto",
+  "Lato", "Open Sans", "Montserrat", "Poppins", "Raleway", "Nunito", "Work Sans",
+  "DM Sans", "Space Grotesk", "Sora", "Outfit", "Figtree", "Plus Jakarta Sans",
+  "Rubik", "Karla", "Mulish", "Barlow", "Archivo", "Public Sans", "Fira Sans",
+  "Ubuntu", "Quicksand", "Josefin Sans", "Playfair Display", "Merriweather",
+  "Lora", "PT Serif", "Libre Baskerville", "Crimson Text", "Cormorant Garamond",
+  "IBM Plex Serif", "Libre Franklin", "Noto Sans", "Bitter", "Oswald", "Anton"
+];
+const FONT_STACKS = {
+  "Source Sans 3": '"Source Sans 3"',
+  "IBM Plex Sans": '"IBM Plex Sans"',
+  "Work Sans": '"Work Sans"',
+  "DM Sans": '"DM Sans"',
+  "Space Grotesk": '"Space Grotesk"',
+  "Plus Jakarta Sans": '"Plus Jakarta Sans"',
+  "Public Sans": '"Public Sans"',
+  "Fira Sans": '"Fira Sans"',
+  "Josefin Sans": '"Josefin Sans"',
+  "Playfair Display": '"Playfair Display"',
+  "PT Serif": '"PT Serif"',
+  "Libre Baskerville": '"Libre Baskerville"',
+  "Crimson Text": '"Crimson Text"',
+  "Cormorant Garamond": '"Cormorant Garamond"',
+  "IBM Plex Serif": '"IBM Plex Serif"',
+  "Libre Franklin": '"Libre Franklin"',
+  "Noto Sans": '"Noto Sans"',
+  "Open Sans": '"Open Sans"'
+};
+function fontStack(name) {
+  return (FONT_STACKS[name] || '"' + String(name || "Inter") + '"') + ", Arial, sans-serif";
+}
 const BASE_TEMPLATE_OPTIONS = [
   { id: "modern", name: "Modern Minimal", desc: "Clean single column with strong hierarchy.", layout: "single" },
   { id: "corporate", name: "Professional Corporate", desc: "Structured headings with a restrained accent.", layout: "banner" },
@@ -1605,13 +1733,161 @@ const BASE_TEMPLATE_OPTIONS = [
   { id: "two-column", name: "Clean Two Column", desc: "Compact sidebar and main content structure.", layout: "sidebar" },
   { id: "elegant", name: "Elegant Minimal", desc: "Centered typography with refined spacing.", layout: "centered" }
 ];
-const TEMPLATE_NAMES = ["Midnight Editorial","Nordic Air","Swiss Grid","Bold Portfolio","Blue Ribbon","Violet Studio","Aqua Tech","Slate Executive","Monochrome Luxe","Soft Corner","Timeline Pro","Classic Serif","Neo Minimal","Resume Stack","Gridline","Focus Sidebar","Creative Split","Executive Beam","Code Canvas","Paper Cut","Signal Modern","Studio Dark","Quiet Luxury","Orbit","Metro Resume","Atlas","Prism","Vertex","Flow","Frame","Contrast","Minimal Black","Cobalt Edge","Lavender Line","Iceberg","Carbon","Aurora","Studio White","Copper Ink","Oceanic","Gallery","Precision","Blueprint","Columnist","Nova"];
-const TEMPLATE_OPTIONS = [...BASE_TEMPLATE_OPTIONS, ...TEMPLATE_NAMES.map((name, index) => ({
-  id: "gallery-" + String(index + 6).padStart(2, "0"),
-  name,
-  desc: "Professional " + ["single","sidebar","banner","timeline","split","compact","editorial","dark","grid","centered"][index % 10] + " layout with curated spacing and hierarchy.",
-  layout: ["single","sidebar","banner","timeline","split","compact","editorial","dark","grid","centered"][index % 10]
-}))];
+/* Template engine: 25 structural archetypes x 20 typographic variants = 500 unique designs */
+const TEMPLATE_ARCHETYPES = [
+  { id: "single", name: "Single Column", thumb: "single" },
+  { id: "banner", name: "Banner", thumb: "banner" },
+  { id: "sidebar", name: "Sidebar", thumb: "sidebar" },
+  { id: "sidebar-right", name: "Right Sidebar", thumb: "sidebar" },
+  { id: "timeline", name: "Timeline", thumb: "timeline" },
+  { id: "grid2", name: "Two Column Grid", thumb: "grid" },
+  { id: "magazine", name: "Magazine", thumb: "editorial" },
+  { id: "dark", name: "Midnight", thumb: "dark" },
+  { id: "compact", name: "Compact", thumb: "compact" },
+  { id: "centered", name: "Centered", thumb: "centered" },
+  { id: "boxed", name: "Boxed", thumb: "split" },
+  { id: "left-rule", name: "Left Rule", thumb: "timeline" },
+  { id: "split-head", name: "Split Header", thumb: "banner" },
+  { id: "duotone", name: "Duotone", thumb: "sidebar" },
+  { id: "cards", name: "Card Grid", thumb: "grid" },
+  { id: "serif-min", name: "Serif Minimal", thumb: "editorial" },
+  { id: "bold-type", name: "Bold Type", thumb: "single" },
+  { id: "ribbon", name: "Ribbon", thumb: "banner" },
+  { id: "corner", name: "Corner Accent", thumb: "split" },
+  { id: "stripe", name: "Stripe", thumb: "sidebar" },
+  { id: "mono", name: "Monospace", thumb: "dark" },
+  { id: "elegant-center", name: "Elegant Center", thumb: "centered" },
+  { id: "newspaper", name: "Newspaper", thumb: "grid" },
+  { id: "spotlight", name: "Spotlight", thumb: "banner" },
+  { id: "tags", name: "Tagged", thumb: "split" }
+];
+const TEMPLATE_VARIANTS = [
+  { key: "v01", label: "Classic", font: "Inter", heading: "rule", density: "normal", name: "bold", entry: "plain" },
+  { key: "v02", label: "Airy", font: "Manrope", heading: "accent", density: "airy", name: "spaced", entry: "leftrule" },
+  { key: "v03", label: "Editorial", font: "Playfair Display", heading: "underline", density: "normal", name: "serif", entry: "plain" },
+  { key: "v04", label: "Precision", font: "Roboto", heading: "box", density: "compact", name: "upper", entry: "dot" },
+  { key: "v05", label: "Modern", font: "Montserrat", heading: "plain", density: "normal", name: "upper", entry: "card" },
+  { key: "v06", label: "Soft", font: "Nunito", heading: "pill", density: "airy", name: "thin", entry: "plain" },
+  { key: "v07", label: "Strong", font: "Poppins", heading: "barleft", density: "normal", name: "upper", entry: "leftrule" },
+  { key: "v08", label: "Technical", font: "Space Grotesk", heading: "rule", density: "compact", name: "bold", entry: "dot" },
+  { key: "v09", label: "Warm", font: "Lora", heading: "underline", density: "normal", name: "serif", entry: "card" },
+  { key: "v10", label: "Crisp", font: "Work Sans", heading: "accent", density: "compact", name: "bold", entry: "plain" },
+  { key: "v11", label: "Studio", font: "DM Sans", heading: "pill", density: "normal", name: "spaced", entry: "dot" },
+  { key: "v12", label: "Quiet", font: "Karla", heading: "plain", density: "airy", name: "thin", entry: "leftrule" },
+  { key: "v13", label: "Bold", font: "Archivo", heading: "barleft", density: "normal", name: "upper", entry: "card" },
+  { key: "v14", label: "Neutral", font: "Public Sans", heading: "rule", density: "normal", name: "bold", entry: "plain" },
+  { key: "v15", label: "Refined", font: "Cormorant Garamond", heading: "underline", density: "airy", name: "serif", entry: "dot" },
+  { key: "v16", label: "Geometric", font: "Outfit", heading: "box", density: "normal", name: "spaced", entry: "leftrule" },
+  { key: "v17", label: "Humanist", font: "Fira Sans", heading: "accent", density: "normal", name: "bold", entry: "card" },
+  { key: "v18", label: "Display", font: "Oswald", heading: "pill", density: "compact", name: "upper", entry: "plain" },
+  { key: "v19", label: "Minimal", font: "Libre Franklin", heading: "plain", density: "normal", name: "thin", entry: "dot" },
+  { key: "v20", label: "Executive", font: "Merriweather", heading: "barleft", density: "normal", name: "serif", entry: "leftrule" }
+];
+const THUMB_ACCENTS = ["#2563eb","#7c3aed","#06b6d4","#0f766e","#db2777","#ea580c","#4f46e5","#0891b2","#334155","#111827","#b45309","#be123c","#0e7490","#4338ca","#15803d","#7e22ce","#0369a1","#c2410c","#1e40af","#86198f"];
+const TEMPLATE_OPTIONS = [
+  ...BASE_TEMPLATE_OPTIONS,
+  ...TEMPLATE_ARCHETYPES.flatMap((arch, ai) =>
+    TEMPLATE_VARIANTS.map((v, vi) => ({
+      id: "studio-" + arch.id + "-" + v.key,
+      name: v.label + " " + arch.name,
+      desc: arch.name + " structure with " + v.heading + " headings, " + v.density + " spacing and " + v.entry + " entries.",
+      layout: arch.id,
+      thumb: arch.thumb,
+      variant: v.key,
+      accent: THUMB_ACCENTS[(ai * TEMPLATE_VARIANTS.length + vi) % THUMB_ACCENTS.length]
+    }))
+  )
+];
+
+function templateArchetypeCss(a) {
+  const S = ".cv-page.tpl-arch-" + a;
+  const tint = "color-mix(in srgb,var(--cv-accent) 9%,#fff)";
+  const tintStrong = "color-mix(in srgb,var(--cv-accent) 16%,#fff)";
+  const line = "color-mix(in srgb,var(--cv-accent) 38%,#e2e8f0)";
+  switch (a) {
+    case "banner":
+      return S+" .cv-header{background:var(--cv-accent);color:#fff;padding:40px 46px 30px}"+S+" .cv-name{color:#fff}"+S+" .cv-title{color:rgba(255,255,255,.9)}"+S+" .cv-contact,"+S+" .cv-contact a{color:rgba(255,255,255,.92)}"+S+" .cv-main{padding-top:26px}";
+    case "sidebar":
+      return S+"{display:grid;grid-template-columns:236px 1fr;min-height:var(--cv-height)}"+S+" .cv-header{grid-column:1/-1;padding:34px 40px 26px;border-bottom:1px solid #e2e8f0}"+S+" .cv-sidebar{padding:26px 24px 40px 40px;background:#f5f8fc;background:"+tint+";border-right:1px solid #e2e8f0}"+S+" .cv-main{padding:26px 40px 40px 30px}"+S+" .cv-sidebar .cv-section{margin-bottom:16px}"+S+" .cv-sidebar .section-heading{font-size:10px}";
+    case "sidebar-right":
+      return S+"{display:grid;grid-template-columns:1fr 236px;min-height:var(--cv-height)}"+S+" .cv-header{grid-column:1/-1;padding:34px 40px 26px;border-bottom:1px solid #e2e8f0}"+S+" .cv-main{order:1;padding:26px 30px 40px 40px}"+S+" .cv-sidebar{order:2;padding:26px 40px 40px 24px;background:#f5f8fc;background:"+tint+";border-left:1px solid #e2e8f0}"+S+" .cv-sidebar .cv-section{margin-bottom:16px}"+S+" .cv-sidebar .section-heading{font-size:10px}";
+    case "timeline":
+      return S+" .cv-main{border-left:2px solid #e2e8f0;margin-left:46px;padding-left:34px}"+S+" .entry{position:relative}"+S+" .entry::before{content:\"\";position:absolute;left:-40px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--cv-accent);box-shadow:0 0 0 3px #fff}";
+    case "grid2":
+      return S+" .cv-main{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;align-items:start}"+S+" .cv-main>.cv-section:first-child{grid-column:1/-1}";
+    case "magazine":
+      return S+" .cv-header{padding:48px 46px 30px;border-bottom:4px double var(--cv-accent)}"+S+" .cv-name{font-family:\"Playfair Display\",Georgia,serif;font-size:46px;font-weight:700;letter-spacing:-.02em}"+S+" .cv-title{text-transform:uppercase;letter-spacing:.24em;font-size:11px}"+S+" .section-heading{font-family:\"Playfair Display\",Georgia,serif;text-transform:none;font-size:15px;letter-spacing:0}"+S+" .cv-main{padding-top:26px}";
+    case "dark":
+      return S+"{background:#0b1220;color:#e2e8f0}"+S+" .cv-header{background:#0f172a;color:#fff;padding:40px 46px 30px;border-bottom:1px solid #1e293b}"+S+" .cv-name,"+S+" .section-heading,"+S+" .entry-title,"+S+" .link-label,"+S+" .skill-row strong{color:#f8fafc}"+S+" .cv-title,"+S+" .project-url,"+S+" .credential-link{color:var(--cv-accent)}"+S+" .cv-contact,"+S+" .cv-contact a{color:#cbd5e1}"+S+" .section-content,"+S+" .entry-sub,"+S+" .entry-dates,"+S+" .entry-description,"+S+" .skill-row span{color:#cbd5e1}"+S+" .section-heading .rule{background:#334155}"+S+" .cv-main{padding-top:26px}";
+    case "compact":
+      return S+" .cv-header{padding:28px 40px 18px}"+S+" .cv-main{padding:0 40px 32px}"+S+" .cv-section{margin-bottom:12px}"+S+" .section-content{line-height:1.4}"+S+" .entry{margin-bottom:8px}";
+    case "centered":
+      return S+" .cv-header{text-align:center;padding:44px 46px 26px}"+S+" .header-inner{justify-content:center}"+S+" .cv-contact{justify-content:center}"+S+" .section-heading{justify-content:center}"+S+" .section-heading .rule{max-width:90px}"+S+" .entry-head{flex-direction:column;gap:2px}"+S+" .entry-dates{text-align:center}";
+    case "boxed":
+      return S+" .cv-section{padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}"+S+" .section-heading{margin-bottom:8px}";
+    case "left-rule":
+      return S+" .cv-section{border-left:3px solid var(--cv-accent);padding-left:14px}";
+    case "split-head":
+      return S+" .cv-header{padding:0}"+S+" .header-inner{align-items:stretch;gap:0}"+S+" .header-inner>div:first-child{flex:1;padding:38px 40px;background:var(--cv-accent);color:#fff}"+S+" .cv-name{color:#fff}"+S+" .cv-title,"+S+" .cv-contact,"+S+" .cv-contact a{color:rgba(255,255,255,.92)}"+S+" .cv-photo{width:34%;height:auto;min-height:150px;border-radius:0;align-self:stretch;object-fit:cover}"+S+" .cv-main{padding-top:26px}";
+    case "duotone":
+      return S+"{display:grid;grid-template-columns:236px 1fr;min-height:var(--cv-height)}"+S+" .cv-header{grid-column:1/-1;padding:36px 40px 26px;background:linear-gradient(100deg,var(--cv-accent) 0 38%,#fff 38%)}"+S+" .cv-sidebar{padding:26px 24px 40px 40px;background:#f5f8fc;background:"+tintStrong+";border-right:1px solid #e2e8f0}"+S+" .cv-main{padding:26px 40px 40px 30px}"+S+" .cv-sidebar .cv-section{margin-bottom:16px}";
+    case "cards":
+      return S+" .cv-section{padding:13px 15px;border:1px solid #e2e8f0;border-radius:12px;background:#f6f9fd;background:"+tint+";margin-bottom:14px}"+S+" .entry{background:#fff;border-radius:9px;padding:10px 12px;box-shadow:0 1px 2px rgba(15,23,42,.05)}";
+    case "serif-min":
+      return S+"{font-family:\"Playfair Display\",Georgia,serif}"+S+" .cv-name{font-weight:700;letter-spacing:-.01em}"+S+" .section-heading{font-family:Georgia,serif;text-transform:none;letter-spacing:0;font-size:14px;border-bottom:1px solid #e2e8f0;padding-bottom:5px}"+S+" .section-heading .rule{display:none}"+S+" .cv-title{font-style:italic}";
+    case "bold-type":
+      return S+" .cv-name{font-size:44px;font-weight:800;letter-spacing:-.05em;text-transform:uppercase;line-height:.98}"+S+" .section-heading{font-size:13px;letter-spacing:.2em}"+S+" .cv-title{font-size:15px;font-weight:700}";
+    case "ribbon":
+      return S+" .cv-header{position:relative;padding:38px 46px 26px 60px}"+S+" .cv-header::before{content:\"\";position:absolute;left:0;top:0;bottom:0;width:22px;background:var(--cv-accent)}"+S+" .cv-main{padding-left:60px}";
+    case "corner":
+      return S+" .cv-header{position:relative;overflow:hidden}"+S+" .cv-header::after{content:\"\";position:absolute;right:-60px;top:-60px;width:170px;height:170px;border-radius:50%;background:#e8f0fe;background:"+tintStrong+"}"+S+" .cv-main{padding-top:26px}";
+    case "stripe":
+      return S+"{border-left:16px solid var(--cv-accent)}"+S+" .cv-header{padding-left:38px}"+S+" .cv-main{padding-left:38px}";
+    case "mono":
+      return S+"{font-family:\"IBM Plex Mono\",\"Roboto Mono\",monospace}"+S+" .cv-name{font-weight:700;letter-spacing:-.02em}"+S+" .section-heading{font-family:\"IBM Plex Mono\",\"Roboto Mono\",monospace;letter-spacing:.06em;text-transform:uppercase}"+S+" .section-heading::before{content:\"> \";color:var(--cv-accent)}"+S+" .cv-main{padding-top:26px}";
+    case "elegant-center":
+      return S+" .cv-header{text-align:center;padding:52px 58px 30px}"+S+" .header-inner{justify-content:center}"+S+" .cv-contact{justify-content:center}"+S+" .section-heading{justify-content:center;font-family:\"Playfair Display\",Georgia,serif;text-transform:none;letter-spacing:.04em;font-size:14px}"+S+" .section-heading .rule{max-width:60px}"+S+" .cv-title{text-transform:uppercase;letter-spacing:.2em}";
+    case "newspaper":
+      return S+" .cv-main{column-count:2;column-gap:30px}"+S+" .cv-main>.cv-section:first-child{column-span:all}"+S+" .section-heading{border-bottom:2px solid #0f172a;padding-bottom:4px}"+S+" .section-heading .rule{display:none}";
+    case "spotlight":
+      return S+" .cv-header{padding:0}"+S+" .header-inner{align-items:stretch}"+S+" .header-inner>div:first-child{flex:1;padding:40px 44px;background:#0f172a;color:#fff}"+S+" .cv-name{color:#fff}"+S+" .cv-title{color:var(--cv-accent)}"+S+" .cv-contact,"+S+" .cv-contact a{color:#cbd5e1}"+S+" .cv-photo{width:150px;height:150px;border-radius:12px;align-self:center;margin:28px 44px 28px 0}"+S+" .cv-main{padding-top:28px}";
+    case "tags":
+      return S+" .section-heading{background:var(--cv-accent);color:#fff;padding:4px 11px;border-radius:999px;display:inline-flex}"+S+" .section-heading .rule{display:none}"+S+" .skills-grid{grid-template-columns:repeat(3,minmax(0,1fr))}"+S+" .skill-row{background:#f1f5f9;background:"+tint+";border-radius:999px;padding:4px 10px}";
+    default:
+      return "";
+  }
+}
+
+function templateVariantCss(v) {
+  const S = ".cv-page.tpl-var-" + v.key;
+  const out = [S + "{font-family:" + fontStack(v.font) + "}"];
+  if (v.name === "upper") out.push(S + " .cv-name{text-transform:uppercase;letter-spacing:.02em;font-weight:800}");
+  else if (v.name === "spaced") out.push(S + " .cv-name{letter-spacing:.14em;text-transform:uppercase;font-weight:700;font-size:29px}");
+  else if (v.name === "serif") out.push(S + " .cv-name{font-family:\"Playfair Display\",Georgia,serif;font-weight:700;letter-spacing:-.01em}");
+  else if (v.name === "thin") out.push(S + " .cv-name{font-weight:500;letter-spacing:-.01em}");
+  else out.push(S + " .cv-name{font-weight:800;letter-spacing:-.04em}");
+  if (v.heading === "underline") out.push(S + " .section-heading{border-bottom:2px solid var(--cv-accent);padding-bottom:5px}" + S + " .section-heading .rule{display:none}");
+  else if (v.heading === "accent") out.push(S + " .section-heading{color:var(--cv-accent)}");
+  else if (v.heading === "box") out.push(S + " .section-heading{background:color-mix(in srgb,var(--cv-accent) 12%,transparent);padding:5px 9px;border-radius:6px}" + S + " .section-heading .rule{display:none}");
+  else if (v.heading === "plain") out.push(S + " .section-heading .rule{display:none}");
+  else if (v.heading === "pill") out.push(S + " .section-heading{background:var(--cv-accent);color:#fff;padding:4px 10px;border-radius:999px;display:inline-flex}" + S + " .section-heading .rule{display:none}");
+  else if (v.heading === "barleft") out.push(S + " .section-heading{border-left:4px solid var(--cv-accent);padding-left:9px}" + S + " .section-heading .rule{display:none}");
+  else out.push(S + " .section-heading{letter-spacing:.12em}");
+  if (v.density === "airy") out.push(S + " .cv-section{margin-bottom:calc(26px * var(--cv-space))}" + S + " .section-content{line-height:1.72}");
+  else if (v.density === "compact") out.push(S + " .cv-section{margin-bottom:calc(13px * var(--cv-space))}" + S + " .section-content{line-height:1.42}" + S + " .entry{margin-bottom:8px}");
+  if (v.entry === "leftrule") out.push(S + " .entry{border-left:3px solid color-mix(in srgb,var(--cv-accent) 60%,transparent);padding-left:12px;margin-left:2px}");
+  else if (v.entry === "dot") out.push(S + " .entry{position:relative;padding-left:15px}" + S + " .entry::before{content:\"\";position:absolute;left:0;top:4px;width:6px;height:6px;border-radius:50%;background:var(--cv-accent)}");
+  else if (v.entry === "card") out.push(S + " .entry{background:color-mix(in srgb,var(--cv-accent) 6%,transparent);border-radius:9px;padding:9px 12px}");
+  return out.join("\n");
+}
+
+function injectTemplateStyles() {
+  if (document.getElementById("templateLibraryStyles")) return;
+  const style = document.createElement("style");
+  style.id = "templateLibraryStyles";
+  style.textContent = TEMPLATE_VARIANTS.map(templateVariantCss).join("\n") + "\n" + TEMPLATE_ARCHETYPES.map(a => templateArchetypeCss(a.id)).join("\n");
+  document.head.appendChild(style);
+}
 const TEXT_STYLE_NAMES = ["Inter Air","Inter Editorial","Inter Precision","Inter Strong","Inter Compact","Manrope Air","Manrope Editorial","Manrope Precision","Manrope Strong","Manrope Compact","IBM Plex Air","IBM Plex Editorial","IBM Plex Precision","IBM Plex Strong","IBM Plex Compact","Source Sans Air","Source Sans Editorial","Source Sans Precision","Source Sans Strong","Source Sans Compact","Roboto Air","Roboto Editorial","Roboto Precision","Roboto Strong","Roboto Compact","Inter Mono Accent","Manrope Wide","Plex Condensed","Source Sans Humanist","Roboto Compact Caps","Inter Uppercase","Manrope Soft","Plex Technical","Source Sans Classic","Roboto Corporate","Inter Display","Manrope Display","Plex Newspaper","Source Sans Modern","Roboto Elegant","Inter Narrow","Manrope Narrow","Plex Square","Source Sans Thin","Roboto Airy","Inter Dense","Manrope Dense","Plex Dense","Source Sans Dense","Roboto Dense"];
 const TEXT_STYLE_OPTIONS = TEXT_STYLE_NAMES.map((name, index) => ({
   id: "text-" + String(index + 1).padStart(2, "0"),
@@ -1715,6 +1991,7 @@ function blankCv(name = "Untitled CV") {
       spacing: 1,
       sectionStyle: "bar",
       textStyle: "text-01",
+      customCss: "",
       enabledSections: Object.fromEntries(ALL_SECTION_IDS.map(id => [id, CORE_SECTION_IDS.includes(id)])),
       sectionOrder: ["profile", "experience", "education", "skills", "projects", "certificates", "achievements", "languages", "interests", "volunteer", "references", "links"]
     }
@@ -1808,18 +2085,30 @@ function setSaveState(label, ok = true) {
   els.saveState.style.color = ok ? "var(--success)" : "var(--danger)";
 }
 
-function showToast(message) {
+function showToast(message, type = "info") {
   let wrap = $(".toast-wrap");
   if (!wrap) {
     wrap = document.createElement("div");
     wrap.className = "toast-wrap no-print";
     document.body.appendChild(wrap);
   }
+  const life = 2800;
   const node = document.createElement("div");
   node.className = "toast";
-  node.textContent = message;
+  node.style.setProperty("--toast-life", life + "ms");
+  const icon = document.createElement("span");
+  icon.className = "toast-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = type === "error" ? "!" : type === "success" ? "✓" : "✦";
+  const msg = document.createElement("span");
+  msg.className = "toast-msg";
+  msg.textContent = message;
+  const bar = document.createElement("span");
+  bar.className = "toast-bar";
+  node.append(icon, msg, bar);
   wrap.appendChild(node);
-  setTimeout(() => node.remove(), 2600);
+  while (wrap.children.length > 4) wrap.firstElementChild.remove();
+  setTimeout(() => node.remove(), life + 500);
 }
 
 function escapeText(value) {
@@ -1965,6 +2254,11 @@ function profileMarkup(cv) {
       <label for="profileText">Professional Summary / Profile <span class="counter" id="profileCounter">${count}/1000</span></label>
       <textarea id="profileText" data-path="profile" maxlength="1000" placeholder="Summarize your background, core strengths, and the type of work you want to do.">${escapeHtml(cv.profile)}</textarea>
       <div class="hint" style="margin-top:5px">Keep this factual. Do not add achievements or skills you cannot support.</div>
+      <div class="example-chips" id="profileExamples"><span class="example-chips-label">Example summaries:</span>
+        <button type="button" class="example-chip" data-profile-example="0">Student</button>
+        <button type="button" class="example-chip" data-profile-example="1">Developer</button>
+        <button type="button" class="example-chip" data-profile-example="2">Fresher</button>
+      </div>
     </div>
     <div class="section-note">AI improvement can be added later through a secure backend proxy. This standalone version does not send your CV data to an external AI service.</div>
   </div>`;
@@ -2109,8 +2403,8 @@ function linksMarkup(cv) {
 
 function templateMiniSvg(t, index) {
   const accents = ['#2563eb','#7c3aed','#06b6d4','#0f766e','#db2777','#ea580c','#4f46e5','#0891b2','#334155','#111827'];
-  const accent = accents[index % accents.length];
-  const family = t.layout || 'single';
+  const accent = t.accent || accents[index % accents.length];
+  const family = t.thumb || t.layout || 'single';
   const dark = family === 'dark';
   const bg = dark ? '#0b1220' : '#ffffff';
   const ink = dark ? '#f8fafc' : '#172033';
@@ -2149,25 +2443,52 @@ function templateMiniSvg(t, index) {
   return '<svg class="template-svg-preview" viewBox="0 0 180 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+safeText(t.name)+' template preview">'+gridDef+header+body+'</svg>';
 }
 
+const CSS_EXAMPLES = {
+  "big-name": "\n.cv-page .cv-name { font-size: 42px; letter-spacing: -0.03em; }\n",
+  "hide-rule": "\n.cv-page .section-heading .rule { display: none; }\n.cv-page .section-heading { letter-spacing: 0.16em; }\n",
+  "round-photo": "\n.cv-page .cv-photo { border-radius: 50%; width: 110px; height: 110px; }\n",
+  "serif-headings": "\n.cv-page .section-heading { font-family: Georgia, 'Times New Roman', serif; text-transform: none; letter-spacing: 0; font-size: 14px; }\n",
+  "tight": "\n.cv-page .cv-section { margin-bottom: 10px; }\n.cv-page .section-content { line-height: 1.4; }\n",
+  "accent-bg": "\n.cv-page .cv-header { background: var(--cv-accent); color: #fff; }\n.cv-page .cv-header .cv-name, .cv-page .cv-header .cv-title, .cv-page .cv-header .cv-contact { color: #fff; }\n"
+};
+
+const PROFILE_EXAMPLES = [
+  "Motivated computer engineering student with hands-on internship experience in web development. Comfortable building responsive interfaces and REST APIs, and eager to grow in a collaborative team.",
+  "MERN stack developer experienced in designing and shipping full-stack applications. Strong in JavaScript, Node.js and MongoDB, with a focus on clean, maintainable code.",
+  "Recent graduate with a solid foundation in programming and databases. Quick learner with project experience in HTML, CSS, JavaScript and MySQL, seeking a first full-time role."
+];
+
+const TEMPLATE_PAGE_SIZE = 60;
+function templateMatches(query) {
+  const q = String(query || "").trim().toLowerCase();
+  return TEMPLATE_OPTIONS.filter(t => !q || (t.name + " " + t.desc).toLowerCase().includes(q));
+}
+function templateCardMarkup(t, cv) {
+  const selected = cv.settings.template === t.id ? 'active' : '';
+  return '<button type="button" class="template-card '+selected+'" data-template="'+escapeAttr(t.id)+'" data-template-name="'+escapeAttr(t.name)+'" data-template-desc="'+escapeAttr(t.desc)+'">' +
+    '<div class="template-preview-wrap">'+templateMiniSvg(t, TEMPLATE_OPTIONS.indexOf(t))+'<div class="template-zoom">Click to use</div></div>' +
+    '<div class="template-name">'+escapeHtml(t.name)+'</div>' +
+    '<div class="template-desc">'+escapeHtml(t.desc)+'</div>' +
+  '</button>';
+}
+function templateGridMarkup(cv, query, limit) {
+  const matches = templateMatches(query);
+  const shown = matches.slice(0, limit);
+  return { cards: shown.map(t => templateCardMarkup(t, cv)).join(''), remaining: matches.length - shown.length, total: matches.length };
+}
+
 function designMarkup(cv) {
-  const templateCards = TEMPLATE_OPTIONS.map((t, index) => {
-    const selected = cv.settings.template === t.id ? 'active' : '';
-    const badge = t.id.startsWith('gallery-') ? '<span class="template-badge">NEW</span>' : '';
-    return '<button type="button" class="template-card '+selected+'" data-template="'+escapeAttr(t.id)+'" data-template-name="'+escapeAttr(t.name)+'">' +
-      '<div class="template-preview-wrap">'+templateMiniSvg(t,index)+'<div class="template-zoom">Click to use</div></div>' +
-      '<div class="template-name">'+escapeHtml(t.name)+badge+'</div>' +
-      '<div class="template-desc">'+escapeHtml(t.desc)+'</div>' +
-    '</button>';
-  }).join('');
+  const initialGrid = templateGridMarkup(cv, "", TEMPLATE_PAGE_SIZE);
 
   const order = cv.settings.sectionOrder.filter(id => ALL_SECTION_IDS.includes(id));
   const orderItems = order.map((id, i) => '<div class="order-item" draggable="true" data-section-id="'+id+'"><span class="order-grip">☷</span><span>'+escapeHtml(SECTION_LABELS[id])+'</span><small>'+(hasSectionData(id, cv) ? 'Used' : 'Empty')+'</small><label class="checkbox-row"><input type="checkbox" data-section-toggle="'+id+'" '+(isSectionEnabled(id, cv) ? 'checked' : '')+' aria-label="Show '+escapeAttr(SECTION_LABELS[id])+' section" /></label><button type="button" data-action="moveSection" data-index="'+i+'" data-direction="up" aria-label="Move section up">↑</button><button type="button" data-action="moveSection" data-index="'+i+'" data-direction="down" aria-label="Move section down">↓</button></div>').join('');
   const textOptions = TEXT_STYLE_OPTIONS.map(t => '<option value="'+t.id+'" '+(cv.settings.textStyle === t.id ? 'selected' : '')+'>'+escapeHtml(t.name)+'</option>').join('');
   const fontOptions = FONT_OPTIONS.map(font => '<option value="'+escapeAttr(font)+'" '+(cv.settings.font === font ? 'selected' : '')+'>'+escapeHtml(font)+'</option>').join('');
   return '<div class="form-section design-studio">' +
-    '<div class="design-toolbar"><div><h3>Template Library <span class="library-count">50 styles</span></h3><div class="hint">Each card shows the actual visual structure, not placeholder rows.</div></div><div class="template-search-wrap"><input id="templateSearch" type="search" placeholder="Search templates..." aria-label="Search templates" /></div></div>' +
-    '<div class="template-library-meta"><span>50 template designs</span><span>Click any design to apply it</span></div>' +
-    '<div class="design-grid" id="templateGrid">'+templateCards+'</div>' +
+    '<div class="design-toolbar"><div><h3>Template Library <span class="library-count">'+TEMPLATE_OPTIONS.length+' designs</span></h3><div class="hint">Every card is a real structural layout, not a colour swap. Search by name, mood, or structure.</div></div><div class="template-search-wrap"><input id="templateSearch" type="search" placeholder="Search '+TEMPLATE_OPTIONS.length+' templates..." aria-label="Search templates" /></div></div>' +
+    '<div class="template-library-meta"><span>'+TEMPLATE_OPTIONS.length+' unique template designs</span><span>Click any design to apply it</span></div>' +
+    '<div class="design-grid" id="templateGrid">'+initialGrid.cards+'</div>' +
+    '<div class="template-more-wrap" id="templateMoreWrap">'+(initialGrid.remaining>0 ? '<button type="button" class="btn btn-secondary btn-wide" id="templateMoreBtn">Show '+initialGrid.remaining+' more designs</button>' : '')+'</div>' +
     '<div class="form-divider"></div>' +
     '<div><h3>Text Style Library <span class="library-count">50 styles</span></h3>' +
       '<div class="field-grid"><div class="field"><label for="textStyleSelect">Text Style</label><select id="textStyleSelect" data-path="settings.textStyle">'+textOptions+'</select></div><div class="field"><label for="fontSelect">Base Font</label><select id="fontSelect" data-path="settings.font">'+fontOptions+'</select></div></div>' +
@@ -2177,6 +2498,21 @@ function designMarkup(cv) {
       '<div class="field"><label for="textSizeRange">Text Size <span class="counter" id="textSizeCounter">'+Number(cv.settings.textSize).toFixed(1)+' px</span></label><div class="range-row"><input id="textSizeRange" data-path="settings.textSize" type="range" min="9" max="12" step="0.1" value="'+escapeAttr(cv.settings.textSize)+'" /><input data-path="settings.textSize" type="number" min="9" max="12" step="0.1" value="'+escapeAttr(cv.settings.textSize)+'" aria-label="Text size" /></div></div>' +
       '<div class="field"><label for="spacingRange">Spacing <span class="counter" id="spacingCounter">'+Number(cv.settings.spacing).toFixed(1)+'×</span></label><div class="range-row"><input id="spacingRange" data-path="settings.spacing" type="range" min="0.75" max="1.4" step="0.05" value="'+escapeAttr(cv.settings.spacing)+'" /><input data-path="settings.spacing" type="number" min="0.75" max="1.4" step="0.05" value="'+escapeAttr(cv.settings.spacing)+'" aria-label="Spacing" /></div></div>' +
       '<div class="field"><label for="sectionStyleSelect">Section Style</label><select id="sectionStyleSelect" data-path="settings.sectionStyle"><option value="bar" '+(cv.settings.sectionStyle === 'bar' ? 'selected' : '')+'>Rule and label</option><option value="line" '+(cv.settings.sectionStyle === 'line' ? 'selected' : '')+'>Underline</option><option value="accent" '+(cv.settings.sectionStyle === 'accent' ? 'selected' : '')+'>Accent label</option><option value="box" '+(cv.settings.sectionStyle === 'box' ? 'selected' : '')+'>Subtle box</option></select></div></div>' +
+    '<div class="form-divider"></div>' +
+    '<div><h3>Custom Design Studio <span class="library-count">Full control</span></h3>' +
+      '<div class="hint" style="margin-bottom:10px">Not happy with any template? Write your own CSS to change anything in the document. Target it with selectors that start with <code>.cv-page</code>. Your code is applied live to the preview and the export.</div>' +
+      '<div class="field full"><label for="customCssInput">Custom CSS</label><textarea id="customCssInput" data-path="settings.customCss" rows="7" spellcheck="false" placeholder="/* Example */&#10;.cv-page .cv-name { font-size: 40px; letter-spacing: -.02em; }&#10;.cv-page .section-heading { color: #0f172a; text-transform: none; }">'+escapeHtml(cv.settings.customCss || "")+'</textarea></div>' +
+      '<div class="example-chips" id="cssExamples"><span class="example-chips-label">Try an example:</span>' +
+        '<button type="button" class="example-chip" data-css-example="big-name">Bigger name</button>' +
+        '<button type="button" class="example-chip" data-css-example="hide-rule">Hide heading rules</button>' +
+        '<button type="button" class="example-chip" data-css-example="round-photo">Round photo</button>' +
+        '<button type="button" class="example-chip" data-css-example="serif-headings">Serif headings</button>' +
+        '<button type="button" class="example-chip" data-css-example="tight">Tight spacing</button>' +
+        '<button type="button" class="example-chip" data-css-example="accent-bg">Accent header</button>' +
+        '<button type="button" class="example-chip" data-css-example="clear">Clear</button>' +
+      '</div>' +
+      '<div class="hint">Click an example to append ready-made CSS, then edit it however you like.</div>' +
+    '</div>' +
     '<div class="form-divider"></div><div><h3>Optional Sections</h3><div class="hint" style="margin-bottom:10px">Use these sections only when they add useful information. Empty sections never appear in the CV.</div>'+optionalSectionEditors(cv)+'</div>' +
     '<div class="form-divider"></div><div><h3>Section Order</h3><div class="hint" style="margin-bottom:10px">Drag sections to reorder them. The CV preview follows this order.</div><div class="order-list" id="sectionOrderList">'+orderItems+'</div></div>' +
   '</div>';
@@ -2204,7 +2540,7 @@ function previewStepMarkup() {
 }
 
 function downloadStepMarkup() {
-  return `<div class="form-section"><div class="section-note">PDF export uses the browser print engine. This keeps the CV as real HTML text, so text stays selectable and valid links can remain clickable in the saved PDF.</div><button class="btn btn-primary btn-wide" type="button" id="downloadPdfBtn">Download CV as PDF</button><button class="btn btn-secondary btn-wide" type="button" id="downloadPngBtn">Download CV as PNG</button><div class="hint">PNG export uses a 3× render scale. It requires internet access for the optional html2canvas library.</div><div class="section-note">Before printing, check the document in the live preview. Print CSS removes editor controls, navigation, buttons, scrollbars, and other UI.</div></div>`;
+  return `<div class="form-section"><div class="section-note">PDF export uses the browser print engine at maximum quality. This keeps the CV as real HTML text, so text stays selectable and valid links can remain clickable in the saved PDF.</div><button class="btn btn-primary btn-wide" type="button" id="downloadPdfBtn">Download CV as PDF (Print Quality)</button><button class="btn btn-secondary btn-wide" type="button" id="downloadPngBtn">Download CV as PNG (Ultra HD)</button><div class="hint">PNG export renders at up to 6× scale for the sharpest possible image. It requires internet access for the optional html2canvas library.</div><div class="section-note">Before exporting, check the document in the live preview. Print CSS removes editor controls, navigation, buttons, scrollbars, and other UI.</div></div>`;
 }
 
 function bindStepEvents() {
@@ -2257,23 +2593,53 @@ function bindStepEvents() {
     input.value = "";
     scheduleSave(); renderStep(); renderPreview();
   }));
-  $('[data-add]', els.stepContent).forEach(btn => btn.addEventListener("click", () => addRepeat(btn.dataset.add)));
-  $('[data-template]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+  $$('[data-add]', els.stepContent).forEach(btn => btn.addEventListener("click", () => addRepeat(btn.dataset.add)));
+  const templateGrid = $("#templateGrid", els.stepContent);
+  const templateMoreWrap = $("#templateMoreWrap", els.stepContent);
+  let templateLimit = TEMPLATE_PAGE_SIZE;
+  let templateQuery = "";
+  const paintTemplates = () => {
+    const cv = currentCv();
+    if (!cv || !templateGrid) return;
+    const grid = templateGridMarkup(cv, templateQuery, templateLimit);
+    templateGrid.innerHTML = grid.cards || '<div class="empty-state"><strong>No templates found</strong><p>Try a different word, like "sidebar", "serif", or "grid".</p></div>';
+    if (templateMoreWrap) templateMoreWrap.innerHTML = grid.remaining > 0 ? '<button type="button" class="btn btn-secondary btn-wide" id="templateMoreBtn">Show '+grid.remaining+' more designs</button>' : '';
+  };
+  if (templateGrid) templateGrid.addEventListener("click", e => {
+    const card = e.target.closest("[data-template]");
+    if (!card) return;
     const cv = currentCv();
     if (!cv) return;
-    cv.settings.template = btn.dataset.template;
+    cv.settings.template = card.dataset.template;
     scheduleSave();
     renderStep();
     renderPreview();
-    showToast("Template applied.");
-  }));
+    showToast("Template applied.", "success");
+  });
+  if (templateMoreWrap) templateMoreWrap.addEventListener("click", e => {
+    if (!e.target.closest("#templateMoreBtn")) return;
+    templateLimit += TEMPLATE_PAGE_SIZE;
+    paintTemplates();
+  });
   const templateSearch = $("#templateSearch", els.stepContent);
   if (templateSearch) templateSearch.addEventListener("input", () => {
-    const query = templateSearch.value.trim().toLowerCase();
-    $(".template-card", els.stepContent).forEach(card => {
-      card.hidden = Boolean(query && !card.dataset.templateName.toLowerCase().includes(query));
-    });
+    templateQuery = templateSearch.value;
+    templateLimit = TEMPLATE_PAGE_SIZE;
+    paintTemplates();
   });
+  const cssInput = $("#customCssInput", els.stepContent);
+  $$("[data-css-example]", els.stepContent).forEach(chip => chip.addEventListener("click", () => {
+    if (!cssInput) return;
+    const key = chip.dataset.cssExample;
+    cssInput.value = key === "clear" ? "" : cssInput.value + (CSS_EXAMPLES[key] || "");
+    cssInput.dispatchEvent(new Event("input", { bubbles: true }));
+  }));
+  $$("[data-profile-example]", els.stepContent).forEach(chip => chip.addEventListener("click", () => {
+    const ta = $("#profileText", els.stepContent);
+    if (!ta) return;
+    ta.value = PROFILE_EXAMPLES[Number(chip.dataset.profileExample)] || "";
+    ta.dispatchEvent(new Event("input", { bubbles: true }));
+  }));
   $$('[data-action="addArrayValue"]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
     const cv = currentCv();
     if (!Array.isArray(cv[btn.dataset.path])) cv[btn.dataset.path] = [];
@@ -2611,7 +2977,7 @@ function validateCurrentStep() {
     if (phoneEl) { validatePhoneField(phoneEl); ok = ok && validPhone(phoneEl.value); }
   }
   if (currentStep === 7) {
-    $("input[data-path]", els.stepContent).forEach(el => {
+    $$("input[data-path]", els.stepContent).forEach(el => {
       if (el.dataset.path.includes("links.") || el.dataset.path.endsWith("url") || el.dataset.path.endsWith("github")) {
         validateUrlField(el);
         if (el.closest(".field")?.classList.contains("invalid")) ok = false;
@@ -2647,7 +3013,8 @@ async function downloadPng() {
   if (fn) { fn.disabled = true; fn.textContent = "Rendering PNG…"; }
   try {
     const html2canvas = await loadHtml2Canvas();
-    const canvas = await html2canvas($("#cvCanvas .cv-page"), { scale: 3, useCORS: true, backgroundColor: "#ffffff", logging: false });
+    const dpr = Math.max(window.devicePixelRatio || 1, 2);
+    const canvas = await html2canvas($("#cvCanvas .cv-page"), { scale: Math.min(6, dpr * 2), useCORS: true, backgroundColor: "#ffffff", logging: false, imageTimeout: 20000 });
     const link = document.createElement("a");
     link.download = `${safeFileName(currentCv().name)}.png`;
     link.href = canvas.toDataURL("image/png");
@@ -2656,7 +3023,7 @@ async function downloadPng() {
   } catch {
     showToast("PNG export needs internet access for the optional rendering library.");
   } finally {
-    if (fn) { fn.disabled = false; fn.textContent = "Download CV as PNG"; }
+    if (fn) { fn.disabled = false; fn.textContent = "Download CV as PNG (Ultra HD)"; }
   }
 }
 
@@ -2669,16 +3036,24 @@ function renderPreview() {
   if (!cv) { els.cvCanvas.innerHTML = ""; return; }
   const page = buildCvPage(cv);
   els.cvCanvas.replaceChildren(page);
+  let custom = document.getElementById("cvCustomCss");
+  if (!custom) {
+    custom = document.createElement("style");
+    custom.id = "cvCustomCss";
+    document.head.appendChild(custom);
+  }
+  custom.textContent = cv.settings.customCss || "";
 }
 
 function buildCvPage(cv) {
   const page = document.createElement("div");
   const templateInfo = TEMPLATE_OPTIONS.find(t => t.id === cv.settings.template) || BASE_TEMPLATE_OPTIONS[0];
-  page.className = `cv-page template-${cv.settings.template} layout-${templateInfo.layout || "single"} textstyle-${cv.settings.textStyle || "text-01"} section-style-${cv.settings.sectionStyle || "bar"}`;
+  const archetypeClass = templateInfo.variant ? ` tpl-arch-${templateInfo.layout} tpl-var-${templateInfo.variant}` : "";
+  page.className = `cv-page template-${cv.settings.template} layout-${templateInfo.layout || "single"}${archetypeClass} textstyle-${cv.settings.textStyle || "text-01"} section-style-${cv.settings.sectionStyle || "bar"}`;
   page.style.setProperty("--cv-accent", cv.settings.accentColor || "#2563eb");
   page.style.setProperty("--cv-size", `${Number(cv.settings.textSize || 10.4)}px`);
   page.style.setProperty("--cv-space", String(Number(cv.settings.spacing || 1)));
-  page.style.fontFamily = `${JSON.stringify(cv.settings.font || "Inter").replaceAll('"', "")}, Arial, sans-serif`;
+  page.style.fontFamily = fontStack(cv.settings.font || "Inter");
 
   const header = document.createElement("header");
   header.className = "cv-header";
@@ -2705,7 +3080,7 @@ function buildCvPage(cv) {
   header.appendChild(inner);
   page.appendChild(header);
 
-  if (templateInfo.layout === "sidebar") {
+  if (["sidebar", "sidebar-right", "duotone"].includes(templateInfo.layout)) {
     const sidebar = document.createElement("aside"); sidebar.className = "cv-sidebar";
     const main = document.createElement("main"); main.className = "cv-main";
     const all = cv.settings.sectionOrder.filter(id => ALL_SECTION_IDS.includes(id) && hasSectionData(id, cv));
@@ -2947,6 +3322,7 @@ function initAmbientMotion() {
 }
 
 function init() {
+  injectTemplateStyles();
   profiles = profiles.map(normalizeCv);
   if (!profiles.length) {
     const cv = blankCv(); profiles.push(cv); activeId = cv.id; persistProfiles();
