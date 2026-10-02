@@ -353,7 +353,20 @@ h3 { margin-bottom: 5px; font-size: 15px; }
   --cv-size: 10.4px;
   --cv-space: 1;
   --cv-section-style: bar;
+  align-self: flex-start;
+  flex: 0 0 auto;
 }
+/* Profile photo shape options */
+.cv-page.photo-shape-square .cv-photo { border-radius: 0; }
+.cv-page.photo-shape-circle .cv-photo { border-radius: 50%; }
+.cv-page.photo-shape-rounded .cv-photo { border-radius: 14px; }
+/* Profile photo border options */
+.cv-page.photo-border-none .cv-photo { border: none; }
+.cv-page.photo-border-thin .cv-photo { border: 2px solid var(--cv-accent); box-sizing: border-box; }
+.cv-page.photo-border-medium .cv-photo { border: 4px solid var(--cv-accent); box-sizing: border-box; }
+.cv-page.photo-border-thick .cv-photo { border: 6px solid var(--cv-accent); box-sizing: border-box; }
+.cv-page.photo-border-dark .cv-photo { border: 3px solid #0f172a; box-sizing: border-box; }
+.cv-page.photo-border-light .cv-photo { border: 3px solid #e2e8f0; box-sizing: border-box; }
 .cv-page *, .cv-page *::before, .cv-page *::after { box-sizing: border-box; }
 .cv-page a { color: inherit; text-decoration: none; }
 .cv-page .cv-link { word-break: break-word; }
@@ -503,8 +516,8 @@ h3 { margin-bottom: 5px; font-size: 15px; }
   .no-print, .topbar, .progress-bar, .editor-panel, .preview-head, .toast-wrap, .modal-backdrop { display: none !important; }
   .preview-panel { display: block !important; background: #fff; min-height: auto; }
   .preview-scroll { overflow: visible; padding: 0; }
-  .cv-canvas { display: block; }
-  .cv-page { box-shadow: none; margin: 0; }
+  .cv-canvas { display: block; min-height: 0; }
+  .cv-page { box-shadow: none; margin: 0; transform: none !important; align-self: flex-start; animation: none !important; overflow: visible; }
   @page { size: A4; margin: 0; }
 }
 
@@ -1991,6 +2004,8 @@ function blankCv(name = "Untitled CV") {
       spacing: 1,
       sectionStyle: "bar",
       textStyle: "text-01",
+      photoShape: "rounded",
+      photoBorder: "none",
       customCss: "",
       enabledSections: Object.fromEntries(ALL_SECTION_IDS.map(id => [id, CORE_SECTION_IDS.includes(id)])),
       sectionOrder: ["profile", "experience", "education", "skills", "projects", "certificates", "achievements", "languages", "interests", "volunteer", "references", "links"]
@@ -2498,6 +2513,12 @@ function designMarkup(cv) {
       '<div class="field"><label for="textSizeRange">Text Size <span class="counter" id="textSizeCounter">'+Number(cv.settings.textSize).toFixed(1)+' px</span></label><div class="range-row"><input id="textSizeRange" data-path="settings.textSize" type="range" min="9" max="12" step="0.1" value="'+escapeAttr(cv.settings.textSize)+'" /><input data-path="settings.textSize" type="number" min="9" max="12" step="0.1" value="'+escapeAttr(cv.settings.textSize)+'" aria-label="Text size" /></div></div>' +
       '<div class="field"><label for="spacingRange">Spacing <span class="counter" id="spacingCounter">'+Number(cv.settings.spacing).toFixed(1)+'×</span></label><div class="range-row"><input id="spacingRange" data-path="settings.spacing" type="range" min="0.75" max="1.4" step="0.05" value="'+escapeAttr(cv.settings.spacing)+'" /><input data-path="settings.spacing" type="number" min="0.75" max="1.4" step="0.05" value="'+escapeAttr(cv.settings.spacing)+'" aria-label="Spacing" /></div></div>' +
       '<div class="field"><label for="sectionStyleSelect">Section Style</label><select id="sectionStyleSelect" data-path="settings.sectionStyle"><option value="bar" '+(cv.settings.sectionStyle === 'bar' ? 'selected' : '')+'>Rule and label</option><option value="line" '+(cv.settings.sectionStyle === 'line' ? 'selected' : '')+'>Underline</option><option value="accent" '+(cv.settings.sectionStyle === 'accent' ? 'selected' : '')+'>Accent label</option><option value="box" '+(cv.settings.sectionStyle === 'box' ? 'selected' : '')+'>Subtle box</option></select></div></div>' +
+    '<div class="form-divider"></div>' +
+    '<div><h3>Profile Photo Style <span class="library-count">Optional</span></h3><div class="hint" style="margin-bottom:10px">Customize the shape and border of your profile photo. Only applies if a photo is uploaded.</div>' +
+      '<div class="field-grid">' +
+        '<div class="field"><label for="photoShapeSelect">Photo Shape</label><select id="photoShapeSelect" data-path="settings.photoShape"><option value="rounded" '+(cv.settings.photoShape === 'rounded' ? 'selected' : '')+'>Rounded</option><option value="circle" '+(cv.settings.photoShape === 'circle' ? 'selected' : '')+'>Circle</option><option value="square" '+(cv.settings.photoShape === 'square' ? 'selected' : '')+'>Square</option></select></div>' +
+        '<div class="field"><label for="photoBorderSelect">Photo Border</label><select id="photoBorderSelect" data-path="settings.photoBorder"><option value="none" '+(cv.settings.photoBorder === 'none' ? 'selected' : '')+'>No border</option><option value="thin" '+(cv.settings.photoBorder === 'thin' ? 'selected' : '')+'>Thin accent</option><option value="medium" '+(cv.settings.photoBorder === 'medium' ? 'selected' : '')+'>Medium accent</option><option value="thick" '+(cv.settings.photoBorder === 'thick' ? 'selected' : '')+'>Thick accent</option><option value="dark" '+(cv.settings.photoBorder === 'dark' ? 'selected' : '')+'>Dark</option><option value="light" '+(cv.settings.photoBorder === 'light' ? 'selected' : '')+'>Light gray</option></select></div>' +
+      '</div></div>' +
     '<div class="form-divider"></div>' +
     '<div><h3>Custom Design Studio <span class="library-count">Full control</span></h3>' +
       '<div class="hint" style="margin-bottom:10px">Not happy with any template? Write your own CSS to change anything in the document. Target it with selectors that start with <code>.cv-page</code>. Your code is applied live to the preview and the export.</div>' +
@@ -3049,7 +3070,7 @@ function buildCvPage(cv) {
   const page = document.createElement("div");
   const templateInfo = TEMPLATE_OPTIONS.find(t => t.id === cv.settings.template) || BASE_TEMPLATE_OPTIONS[0];
   const archetypeClass = templateInfo.variant ? ` tpl-arch-${templateInfo.layout} tpl-var-${templateInfo.variant}` : "";
-  page.className = `cv-page template-${cv.settings.template} layout-${templateInfo.layout || "single"}${archetypeClass} textstyle-${cv.settings.textStyle || "text-01"} section-style-${cv.settings.sectionStyle || "bar"}`;
+  page.className = `cv-page template-${cv.settings.template} layout-${templateInfo.layout || "single"}${archetypeClass} textstyle-${cv.settings.textStyle || "text-01"} section-style-${cv.settings.sectionStyle || "bar"} photo-shape-${cv.settings.photoShape || "rounded"} photo-border-${cv.settings.photoBorder || "none"}`;
   page.style.setProperty("--cv-accent", cv.settings.accentColor || "#2563eb");
   page.style.setProperty("--cv-size", `${Number(cv.settings.textSize || 10.4)}px`);
   page.style.setProperty("--cv-space", String(Number(cv.settings.spacing || 1)));
