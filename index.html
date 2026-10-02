@@ -2257,8 +2257,8 @@ function bindStepEvents() {
     input.value = "";
     scheduleSave(); renderStep(); renderPreview();
   }));
-  $('[data-add]', els.stepContent).forEach(btn => btn.addEventListener("click", () => addRepeat(btn.dataset.add)));
-  $('[data-template]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
+  $$('[data-add]', els.stepContent).forEach(btn => btn.addEventListener("click", () => addRepeat(btn.dataset.add)));
+  $$('[data-template]', els.stepContent).forEach(btn => btn.addEventListener("click", () => {
     const cv = currentCv();
     if (!cv) return;
     cv.settings.template = btn.dataset.template;
@@ -2270,7 +2270,7 @@ function bindStepEvents() {
   const templateSearch = $("#templateSearch", els.stepContent);
   if (templateSearch) templateSearch.addEventListener("input", () => {
     const query = templateSearch.value.trim().toLowerCase();
-    $(".template-card", els.stepContent).forEach(card => {
+    $$(".template-card", els.stepContent).forEach(card => {
       card.hidden = Boolean(query && !card.dataset.templateName.toLowerCase().includes(query));
     });
   });
@@ -2611,7 +2611,7 @@ function validateCurrentStep() {
     if (phoneEl) { validatePhoneField(phoneEl); ok = ok && validPhone(phoneEl.value); }
   }
   if (currentStep === 7) {
-    $("input[data-path]", els.stepContent).forEach(el => {
+    $$("input[data-path]", els.stepContent).forEach(el => {
       if (el.dataset.path.includes("links.") || el.dataset.path.endsWith("url") || el.dataset.path.endsWith("github")) {
         validateUrlField(el);
         if (el.closest(".field")?.classList.contains("invalid")) ok = false;
